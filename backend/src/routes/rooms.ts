@@ -14,7 +14,20 @@ export const roomsRouter = Router();
 roomsRouter.get(
   "/",
   asyncHandler(async (_req, res) => {
-    const rooms = await prisma.room.findMany({ orderBy: { name: "asc" } });
+    const rooms = await prisma.room.findMany({
+      orderBy: { name: "asc" },
+      include: {
+        resort: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            region: true,
+            shortDescription: true,
+          },
+        },
+      },
+    });
     res.json({ rooms });
   })
 );
@@ -126,7 +139,22 @@ roomsRouter.get(
       res.status(400).json({ error: "Invalid room id" });
       return;
     }
-    const room = await prisma.room.findUnique({ where: { id } });
+    const room = await prisma.room.findUnique({
+      where: { id },
+      include: {
+        resort: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            region: true,
+            shortDescription: true,
+            address: true,
+            mapOverview: true,
+          },
+        },
+      },
+    });
     if (!room) {
       res.status(404).json({ error: "Room not found" });
       return;

@@ -6,6 +6,7 @@ import { authRouter } from "./routes/auth.js";
 import { bookingsRouter } from "./routes/bookings.js";
 import { notificationsRouter } from "./routes/notifications.js";
 import { profileRouter } from "./routes/profile.js";
+import { resortsRouter } from "./routes/resorts.js";
 import { roomsRouter } from "./routes/rooms.js";
 import { serviceRequestsRouter } from "./routes/serviceRequests.js";
 
@@ -54,6 +55,7 @@ export function createApp() {
 
   app.use("/api/auth", authRouter);
   app.use("/api", profileRouter);
+  app.use("/api/resorts", resortsRouter);
   app.use("/api/rooms", roomsRouter);
   app.use("/api/bookings", bookingsRouter);
   app.use("/api/service-requests", serviceRequestsRouter);

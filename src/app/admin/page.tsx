@@ -1,7 +1,16 @@
 "use client";
 
 import { RequireAuth } from "@/components/require-auth";
-import { Badge, Button, Card, EmptyState, Input, Spinner } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Input,
+  PageHeader,
+  Spinner,
+  TableWrap,
+} from "@/components/ui";
 import { useAuth } from "@/contexts/auth-context";
 import { api, ApiError } from "@/lib/api";
 import type { Booking, ServiceRequest, ServiceRequestStatus } from "@/lib/types";
@@ -98,46 +107,52 @@ export default function AdminPage() {
 
   return (
     <RequireAuth adminOnly>
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Admin dashboard
-        </h1>
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
+        <PageHeader
+          eyebrow="Staff"
+          title="Admin dashboard"
+          description="Revenue, active stays, room inventory, and the full service queue."
+        />
         {error ? (
-          <p className="mt-4 text-red-600 dark:text-red-400">{error}</p>
+          <p className="mt-6 rounded-sm border border-danger/30 bg-danger-muted px-4 py-3 text-sm text-danger">
+            {error}
+          </p>
         ) : null}
 
         {!dash ? (
-          <div className="mt-12 flex justify-center">
+          <div className="mt-16 flex justify-center">
             <Spinner />
           </div>
         ) : (
           <>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <p className="text-sm text-zinc-500">Total bookings</p>
-                <p className="mt-1 text-2xl font-semibold">{dash.totalBookings}</p>
-              </Card>
-              <Card>
-                <p className="text-sm text-zinc-500">Total revenue</p>
-                <p className="mt-1 text-2xl font-semibold">${dash.totalRevenue}</p>
-              </Card>
-              <Card>
-                <p className="text-sm text-zinc-500">Active stays</p>
-                <p className="mt-1 text-2xl font-semibold">
-                  {dash.activeBookings.length}
-                </p>
-              </Card>
-              <Card>
-                <p className="text-sm text-zinc-500">Pending requests</p>
-                <p className="mt-1 text-2xl font-semibold">
-                  {dash.pendingServiceRequests.length}
-                </p>
-              </Card>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { label: "Total bookings", value: dash.totalBookings },
+                { label: "Total revenue", value: `$${dash.totalRevenue}` },
+                { label: "Active stays", value: dash.activeBookings.length },
+                {
+                  label: "Pending requests",
+                  value: dash.pendingServiceRequests.length,
+                },
+              ].map((stat) => (
+                <Card
+                  key={stat.label}
+                  className="relative overflow-hidden border-border/80 p-5"
+                >
+                  <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-accent/10 blur-2xl" />
+                  <p className="relative text-xs font-semibold uppercase tracking-wider text-muted">
+                    {stat.label}
+                  </p>
+                  <p className="relative mt-2 text-2xl font-semibold tabular-nums text-foreground">
+                    {stat.value}
+                  </p>
+                </Card>
+              ))}
             </div>
 
-            <div className="mt-12 grid gap-10 lg:grid-cols-2">
+            <div className="mt-14 grid gap-10 lg:grid-cols-2">
               <section>
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                <h2 className="text-lg font-semibold text-foreground">
                   Active bookings
                 </h2>
                 {dash.activeBookings.length === 0 ? (
@@ -148,15 +163,17 @@ export default function AdminPage() {
                   <ul className="mt-4 space-y-3">
                     {dash.activeBookings.map((b) => (
                       <li key={b.id}>
-                        <Card>
-                          <p className="font-medium">
+                        <Card className="p-4">
+                          <p className="font-semibold text-foreground">
                             {b.room?.name} · {b.user?.email ?? "Guest"}
                           </p>
-                          <p className="mt-1 text-xs text-zinc-500 font-mono">{b.id}</p>
+                          <p className="mt-1 font-mono text-xs text-muted">
+                            {b.id}
+                          </p>
                           <div className="mt-3 flex flex-wrap gap-2">
                             {!b.checkedInAt ? (
                               <Button
-                                className="!text-xs !py-1.5"
+                                className="!px-3 !py-1.5 !text-xs"
                                 onClick={() => void checkIn(b.id)}
                               >
                                 Check in
@@ -164,7 +181,7 @@ export default function AdminPage() {
                             ) : !b.checkedOutAt ? (
                               <Button
                                 variant="secondary"
-                                className="!text-xs !py-1.5"
+                                className="!px-3 !py-1.5 !text-xs"
                                 onClick={() => void checkOut(b.id)}
                               >
                                 Check out
@@ -181,11 +198,9 @@ export default function AdminPage() {
               </section>
 
               <section>
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                  Add room
-                </h2>
+                <h2 className="text-lg font-semibold text-foreground">Add room</h2>
                 <Card className="mt-4">
-                  <form onSubmit={createRoom} className="flex flex-col gap-3">
+                  <form onSubmit={createRoom} className="flex flex-col gap-4">
                     <Input
                       label="Name"
                       value={roomName}
@@ -213,12 +228,12 @@ export default function AdminPage() {
               </section>
             </div>
 
-            <section className="mt-12">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <section className="mt-14">
+              <h2 className="text-lg font-semibold text-foreground">
                 Pending service requests
               </h2>
               {dash.pendingServiceRequests.length === 0 ? (
-                <p className="mt-4 text-sm text-zinc-500">None right now.</p>
+                <p className="mt-4 text-sm text-muted">None right now.</p>
               ) : (
                 <ul className="mt-4 space-y-3">
                   {dash.pendingServiceRequests.map((sr) => (
@@ -233,8 +248,8 @@ export default function AdminPage() {
               )}
             </section>
 
-            <section className="mt-12">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <section className="mt-14">
+              <h2 className="text-lg font-semibold text-foreground">
                 All service requests
               </h2>
               {allRequests === null ? (
@@ -244,30 +259,32 @@ export default function AdminPage() {
                   <EmptyState title="No requests" />
                 </div>
               ) : (
-                <div className="mt-4 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <TableWrap>
                   <table className="w-full min-w-[720px] text-left text-sm">
-                    <thead className="bg-zinc-50 dark:bg-zinc-900/50">
+                    <thead className="border-b border-border bg-surface-2/50">
                       <tr>
-                        <th className="px-3 py-2">Guest</th>
-                        <th className="px-3 py-2">Room</th>
-                        <th className="px-3 py-2">Message</th>
-                        <th className="px-3 py-2">Status</th>
-                        <th className="px-3 py-2">Actions</th>
+                        <th className="px-4 py-3 font-semibold">Guest</th>
+                        <th className="px-4 py-3 font-semibold">Room</th>
+                        <th className="px-4 py-3 font-semibold">Message</th>
+                        <th className="px-4 py-3 font-semibold">Status</th>
+                        <th className="px-4 py-3 font-semibold">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {allRequests.map((sr) => (
                         <tr
                           key={sr.id}
-                          className="border-t border-zinc-100 dark:border-zinc-800"
+                          className="border-t border-border/80 hover:bg-surface-2/20"
                         >
-                          <td className="px-3 py-2">{sr.user?.email ?? "—"}</td>
-                          <td className="px-3 py-2">{sr.room?.name}</td>
-                          <td className="max-w-xs truncate px-3 py-2">{sr.message}</td>
-                          <td className="px-3 py-2">
-                            <Badge>{sr.status}</Badge>
+                          <td className="px-4 py-3">{sr.user?.email ?? "—"}</td>
+                          <td className="px-4 py-3">{sr.room?.name}</td>
+                          <td className="max-w-xs truncate px-4 py-3 text-muted">
+                            {sr.message}
                           </td>
-                          <td className="px-3 py-2">
+                          <td className="px-4 py-3">
+                            <Badge variant="muted">{sr.status}</Badge>
+                          </td>
+                          <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-1">
                               {(["PENDING", "IN_PROGRESS", "COMPLETED"] as const).map(
                                 (s) => (
@@ -279,7 +296,7 @@ export default function AdminPage() {
                                   >
                                     {s.slice(0, 4)}
                                   </Button>
-                                )
+                                ),
                               )}
                             </div>
                           </td>
@@ -287,7 +304,7 @@ export default function AdminPage() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </TableWrap>
               )}
             </section>
           </>
@@ -305,10 +322,12 @@ function AdminRequestRow({
   onStatus: (s: ServiceRequestStatus) => void;
 }) {
   return (
-    <Card>
-      <p className="text-sm font-medium">{sr.user?.email}</p>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">{sr.room?.name}</p>
-      <p className="mt-2 text-sm">{sr.message}</p>
+    <Card className="p-4">
+      <p className="text-sm font-semibold text-foreground">{sr.user?.email}</p>
+      <p className="text-sm text-muted">{sr.room?.name}</p>
+      <p className="mt-2 text-sm leading-relaxed text-foreground/90">
+        {sr.message}
+      </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
           variant="secondary"

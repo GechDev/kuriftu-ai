@@ -20,7 +20,11 @@ class BookingApiError(Exception):
 class BookingApiClient:
     def __init__(self, base_url: str, token: str | None = None) -> None:
         self.base_url = base_url.rstrip("/")
+        #: Staff JWT from env; not overwritten when a guest JWT is applied to `token`.
+        self.staff_token: str | None = token
         self.token = token
+        #: When set, wins over LiveKit participant attributes (voice login/register).
+        self.force_token: str | None = None
 
     def _headers(self) -> dict[str, str]:
         h = {"Content-Type": "application/json"}
@@ -39,8 +43,8 @@ class BookingApiClient:
     ) -> Any:
         if auth and not self.token:
             raise BookingApiError(
-                "This action needs an authenticated API token. "
-                "Guest bookings and account features are handled on the website, not over voice."
+                "This action needs an authenticated user. Log in on the website before voice, "
+                "or use login_voice / register_voice in this session."
             )
         url = f"{self.base_url}{path}"
         async with httpx.AsyncClient(timeout=45.0) as client:
@@ -88,6 +92,51 @@ class BookingApiClient:
     async def list_rooms(self) -> Any:
         return await self._request("GET", "/api/rooms")
 
+    async def list_resorts(self) -> Any:
+        return await self._request("GET", "/api/resorts")
+
+    async def get_resort(self, resort_id_or_slug: str) -> Any:
+        rid = resort_id_or_slug.strip()
+        return await self._request("GET", f"/api/resorts/{rid}")
+
+    async def list_resort_services(
+        self,
+        resort_id_or_slug: str,
+        *,
+        category: str | None = None,
+        query: str | None = None,
+    ) -> Any:
+        rid = resort_id_or_slug.strip()
+        params: dict[str, str] = {}
+        if category and category.strip():
+            params["category"] = category.strip().lower()
+        if query and query.strip():
+            params["q"] = query.strip()
+        return await self._request(
+            "GET",
+            f"/api/resorts/{rid}/services",
+            params=params or None,
+        )
+
+    async def list_map_places(
+        self,
+        resort_id_or_slug: str,
+        *,
+        category: str | None = None,
+        query: str | None = None,
+    ) -> Any:
+        rid = resort_id_or_slug.strip()
+        params: dict[str, str] = {}
+        if category and category.strip():
+            params["category"] = category.strip().lower()
+        if query and query.strip():
+            params["q"] = query.strip()
+        return await self._request(
+            "GET",
+            f"/api/resorts/{rid}/map-places",
+            params=params or None,
+        )
+
     async def get_room(self, room_id: str) -> Any:
         return await self._request("GET", f"/api/rooms/{room_id}")
 
@@ -128,11 +177,17 @@ class BookingApiClient:
         return await self._request("GET", f"/api/bookings/{booking_id}", auth=True)
 
     async def create_service_request(
-        self, room_id: str, message: str, booking_id: str | None = None
+        self,
+        room_id: str,
+        message: str,
+        booking_id: str | None = None,
+        service_category: str | None = None,
     ) -> Any:
         body: dict[str, Any] = {"roomId": room_id, "message": message}
         if booking_id:
             body["bookingId"] = booking_id
+        if service_category and service_category.strip():
+            body["serviceCategory"] = service_category.strip().lower()
         return await self._request("POST", "/api/service-requests", auth=True, json_body=body)
 
     async def list_service_requests(self) -> Any:

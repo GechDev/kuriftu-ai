@@ -50,13 +50,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    /** Never block the shell forever if a request or effect misbehaves. */
+    const safetyMs = 20_000;
+    let cancelled = false;
+    const safetyId = window.setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, safetyMs);
+
     void (async () => {
       try {
         await refreshUser();
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          window.clearTimeout(safetyId);
+          setLoading(false);
+        }
       }
     })();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(safetyId);
+    };
   }, [refreshUser]);
 
   const login = useCallback(async (email: string, password: string) => {

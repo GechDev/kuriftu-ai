@@ -1,12 +1,19 @@
 "use client";
 
-import { Badge, Button, Card, EmptyState, Input, Spinner } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Input,
+  Spinner,
+} from "@/components/ui";
 import { useAuth } from "@/contexts/auth-context";
 import { api, ApiError } from "@/lib/api";
 import type { Room } from "@/lib/types";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 function monthStr(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -31,17 +38,21 @@ export default function RoomDetailPage() {
   const [loadRoom, setLoadRoom] = useState(true);
   const [loadCal, setLoadCal] = useState(false);
   const [booking, setBooking] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [roomError, setRoomError] = useState<string | null>(null);
+  const [calendarError, setCalendarError] = useState<string | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   useEffect(() => {
     let c = false;
     void (async () => {
       setLoadRoom(true);
+      setRoomError(null);
       try {
         const { room: r } = await api.rooms.get(id);
         if (!c) setRoom(r);
       } catch (e) {
-        if (!c) setError(e instanceof ApiError ? e.message : "Room not found");
+        if (!c)
+          setRoomError(e instanceof ApiError ? e.message : "Room not found");
       } finally {
         if (!c) setLoadRoom(false);
       }
@@ -53,12 +64,14 @@ export default function RoomDetailPage() {
 
   const loadAvailability = useCallback(async () => {
     setLoadCal(true);
-    setError(null);
+    setCalendarError(null);
     try {
       const res = await api.rooms.availability(id, month);
       setDays(res.days);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Calendar failed");
+      setCalendarError(
+        e instanceof ApiError ? e.message : "Calendar failed to load",
+      );
     } finally {
       setLoadCal(false);
     }
@@ -68,9 +81,9 @@ export default function RoomDetailPage() {
     void loadAvailability();
   }, [loadAvailability]);
 
-  const runQuote = async () => {
-    if (!checkIn || !checkOut) return;
-    setError(null);
+  const fetchQuote = useCallback(async (): Promise<boolean> => {
+    if (!checkIn || !checkOut) return false;
+    setBookingError(null);
     try {
       const q = await api.rooms.quote(id, checkIn, checkOut);
       setQuote({
@@ -78,17 +91,44 @@ export default function RoomDetailPage() {
         totalPrice: q.totalPrice,
         pricePerNight: q.pricePerNight,
       });
+      return true;
     } catch (e) {
       setQuote(null);
-      setError(e instanceof ApiError ? e.message : "Quote failed");
+      setBookingError(
+        e instanceof ApiError ? e.message : "Could not get a price quote",
+      );
+      return false;
     }
-  };
+  }, [id, checkIn, checkOut]);
+
+  const quoteDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!user || !checkIn || !checkOut) return;
+    if (quoteDebounce.current) clearTimeout(quoteDebounce.current);
+    quoteDebounce.current = setTimeout(() => {
+      void fetchQuote();
+    }, 450);
+    return () => {
+      if (quoteDebounce.current) clearTimeout(quoteDebounce.current);
+    };
+  }, [user, checkIn, checkOut, fetchQuote]);
+
+  useEffect(() => {
+    setQuote(null);
+    setBookingError(null);
+  }, [checkIn, checkOut]);
 
   const submitBooking = async () => {
     if (!token || !checkIn || !checkOut) return;
     setBooking(true);
-    setError(null);
+    setBookingError(null);
     try {
+      let ok = !!quote;
+      if (!ok) ok = await fetchQuote();
+      if (!ok) {
+        setBooking(false);
+        return;
+      }
       const { booking: b } = await api.bookings.create(token, {
         roomId: id,
         checkIn,
@@ -96,7 +136,9 @@ export default function RoomDetailPage() {
       });
       router.push(`/bookings/${b.id}`);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Booking failed");
+      setBookingError(
+        e instanceof ApiError ? e.message : "Booking failed — try again",
+      );
     } finally {
       setBooking(false);
     }
@@ -127,48 +169,65 @@ export default function RoomDetailPage() {
 
   if (!room) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <EmptyState title={error ?? "Room not found"} />
-        <Link href="/rooms" className="mt-4 inline-block text-sm underline">
-          Back to rooms
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+        <EmptyState title={roomError ?? "Room not found"} />
+        <Link
+          href="/rooms"
+          className="mt-6 inline-flex text-sm font-semibold text-accent hover:underline"
+        >
+          ← All rooms
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
       <Link
         href="/rooms"
-        className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400"
+        className="inline-flex text-sm font-medium text-muted transition hover:text-accent"
       >
         ← All rooms
       </Link>
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+
+      <div className="mt-6 flex flex-col gap-6 border-b border-border pb-10 lg:flex-row lg:items-end lg:justify-between">
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+            Room detail
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             {room.name}
           </h1>
+          {room.resort ? (
+            <p className="mt-3 text-sm text-muted">
+              Part of{" "}
+              <Link
+                href={`/resorts/${room.resort.slug}`}
+                className="font-semibold text-accent hover:underline"
+              >
+                {room.resort.name}
+              </Link>
+              {room.resort.region ? ` · ${room.resort.region}` : ""}
+            </p>
+          ) : null}
           {room.description ? (
-            <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
+            <p className="mt-3 text-base leading-relaxed text-muted">
               {room.description}
             </p>
           ) : null}
         </div>
-        <Badge>${room.pricePerNight} / night</Badge>
+        <Badge variant="accent" className="w-fit shrink-0 px-4 py-1 text-sm">
+          ${room.pricePerNight} / night
+        </Badge>
       </div>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-2">
         <Card>
-          <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
-            Availability
-          </h2>
-          <p className="mt-1 text-xs text-zinc-500">
+          <h2 className="text-lg font-semibold text-foreground">Availability</h2>
+          <p className="mt-1 text-xs text-muted">
             Booked days are highlighted. Checkout day is not a stayed night.
           </p>
-          <p className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">
-            {monthLabel}
-          </p>
+          <p className="mt-4 text-sm font-semibold text-foreground">{monthLabel}</p>
           <div className="mt-2 flex items-center gap-2">
             <Input
               type="month"
@@ -178,9 +237,12 @@ export default function RoomDetailPage() {
             />
             {loadCal ? <Spinner className="!h-5 !w-5" /> : null}
           </div>
-          <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs">
+          {calendarError ? (
+            <p className="mt-3 text-sm text-danger">{calendarError}</p>
+          ) : null}
+          <div className="mt-5 grid grid-cols-7 gap-1.5 text-center text-[11px] font-medium">
             {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
-              <div key={d} className="font-medium text-zinc-500">
+              <div key={d} className="py-1 text-muted">
                 {d}
               </div>
             ))}
@@ -193,10 +255,10 @@ export default function RoomDetailPage() {
                 <div
                   key={d.date}
                   title={d.date}
-                  className={`rounded-md py-2 ${
+                  className={`rounded-lg py-2 text-sm font-semibold ${
                     d.booked
-                      ? "bg-amber-200 font-medium text-amber-950 dark:bg-amber-900/50 dark:text-amber-100"
-                      : "bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+                      ? "bg-amber-100 text-amber-950 ring-1 ring-amber-200"
+                      : "bg-accent-muted/70 text-accent ring-1 ring-accent/25"
                   }`}
                 >
                   {parseInt(dayNum, 10)}
@@ -207,59 +269,64 @@ export default function RoomDetailPage() {
         </Card>
 
         <Card>
-          <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
-            Book this room
-          </h2>
+          <h2 className="text-lg font-semibold text-foreground">Book this room</h2>
           {!user ? (
-            <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-              <Link href="/login" className="font-medium underline">
+            <p className="mt-4 text-sm leading-relaxed text-muted">
+              <Link href="/login" className="font-semibold text-accent hover:underline">
                 Log in
               </Link>{" "}
               or{" "}
-              <Link href="/register" className="font-medium underline">
+              <Link href="/register" className="font-semibold text-accent hover:underline">
                 register
               </Link>{" "}
-              to book.
+              to complete a reservation.
             </p>
           ) : (
-            <div className="mt-4 flex flex-col gap-4">
+            <div className="mt-5 flex flex-col gap-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input
                   label="Check-in"
                   type="date"
                   value={checkIn}
-                  onChange={(e) => {
-                    setCheckIn(e.target.value);
-                    setQuote(null);
-                  }}
+                  onChange={(e) => setCheckIn(e.target.value)}
                 />
                 <Input
                   label="Check-out"
                   type="date"
                   value={checkOut}
-                  onChange={(e) => {
-                    setCheckOut(e.target.value);
-                    setQuote(null);
-                  }}
+                  onChange={(e) => setCheckOut(e.target.value)}
                 />
               </div>
-              <Button type="button" variant="secondary" onClick={() => void runQuote()}>
-                Get quote
+              <p className="text-xs text-muted">
+                We fetch a quote automatically when both dates are set. You can still
+                refresh it with the button below.
+              </p>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={!checkIn || !checkOut}
+                onClick={() => void fetchQuote()}
+              >
+                Refresh quote
               </Button>
               {quote ? (
-                <div className="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-900">
+                <div className="rounded-sm border border-accent/25 bg-accent-muted/30 px-4 py-3 text-sm">
                   <p>
-                    <strong>{quote.nights}</strong> night(s) × ${quote.pricePerNight} ={" "}
-                    <strong>${quote.totalPrice}</strong> total
+                    <span className="font-semibold text-foreground">{quote.nights}</span>{" "}
+                    night(s) × ${quote.pricePerNight} ={" "}
+                    <span className="font-semibold text-accent">${quote.totalPrice}</span>{" "}
+                    total
                   </p>
                 </div>
               ) : null}
-              {error ? (
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              {bookingError ? (
+                <p className="text-sm text-danger">{bookingError}</p>
               ) : null}
               <Button
                 type="button"
-                disabled={booking || !quote || !token}
+                disabled={
+                  booking || !checkIn || !checkOut || !token
+                }
                 onClick={() => void submitBooking()}
               >
                 {booking ? "Booking…" : "Confirm booking"}

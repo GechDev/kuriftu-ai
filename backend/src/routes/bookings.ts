@@ -1,5 +1,10 @@
 import { Router } from "express";
 import { z } from "zod";
+import {
+  bookingDetailInclude,
+  bookingListInclude,
+  buildStaySummary,
+} from "../lib/booking-includes.js";
 import { nightCount, parseDateOnly, startOfTodayUtc } from "../lib/dates.js";
 import { asyncHandler, routeParamId, zodErrorMessage } from "../lib/http.js";
 import { notifyUser } from "../lib/notifications.js";
@@ -64,14 +69,17 @@ bookingsRouter.post(
         checkOut,
         totalPrice,
       },
-      include: { room: true },
+      include: bookingListInclude,
     });
     await notifyUser(
       req.userId!,
       "Booking confirmed",
       `${room.name}: ${inStr} → ${outStr} (${nights} night(s)). Total ${totalPrice}.`
     );
-    res.status(201).json({ booking });
+    res.status(201).json({
+      booking,
+      staySummary: buildStaySummary(booking),
+    });
   })
 );
 
@@ -96,9 +104,15 @@ bookingsRouter.get(
     const bookings = await prisma.booking.findMany({
       where,
       orderBy: { checkIn: mode === "past" ? "desc" : "asc" },
-      include: { room: true },
+      include: bookingListInclude,
     });
-    res.json({ filter: mode, bookings });
+    res.json({
+      filter: mode,
+      bookings: bookings.map((b) => ({
+        ...b,
+        staySummary: buildStaySummary(b),
+      })),
+    });
   })
 );
 
@@ -112,12 +126,15 @@ bookingsRouter.get(
     }
     const booking = await prisma.booking.findFirst({
       where: { id, userId: req.userId! },
-      include: { room: true },
+      include: bookingDetailInclude,
     });
     if (!booking) {
       res.status(404).json({ error: "Booking not found" });
       return;
     }
-    res.json({ booking });
+    res.json({
+      booking,
+      staySummary: buildStaySummary(booking),
+    });
   })
 );

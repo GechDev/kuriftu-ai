@@ -5,6 +5,10 @@ import { livekitHttpUrl } from "@/lib/livekit-url";
 
 const AGENT_NAME = "kuriftu-hotel";
 
+const backendBase =
+  process.env.BACKEND_INTERNAL_URL?.replace(/\/$/, "") ||
+  "http://127.0.0.1:4000";
+
 export async function POST(req: Request) {
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
@@ -21,7 +25,7 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: { roomName?: string } = {};
+  let body: { roomName?: string; bookingToken?: string | null } = {};
   try {
     body = await req.json();
   } catch {
@@ -32,6 +36,23 @@ export async function POST(req: Request) {
     typeof body.roomName === "string" && body.roomName.trim().length > 0
       ? body.roomName.trim().slice(0, 128)
       : `voice-${randomUUID()}`;
+
+  let bookingToken: string | undefined;
+  if (
+    typeof body.bookingToken === "string" &&
+    body.bookingToken.trim().length > 0
+  ) {
+    bookingToken = body.bookingToken.trim();
+    const me = await fetch(`${backendBase}/api/me`, {
+      headers: { Authorization: `Bearer ${bookingToken}` },
+    });
+    if (!me.ok) {
+      return NextResponse.json(
+        { error: "Invalid or expired booking session" },
+        { status: 401 }
+      );
+    }
+  }
 
   const httpUrl = livekitHttpUrl(livekitUrl);
 
@@ -51,6 +72,9 @@ export async function POST(req: Request) {
     identity,
     name: "Guest",
     ttl: "1h",
+    ...(bookingToken
+      ? { attributes: { kuriftu_jwt: bookingToken } as Record<string, string> }
+      : {}),
   });
   at.addGrant({
     roomJoin: true,
@@ -66,5 +90,6 @@ export async function POST(req: Request) {
     token,
     roomName,
     serverUrl: livekitUrl,
+    linkedAccount: Boolean(bookingToken),
   });
 }

@@ -5,7 +5,7 @@ Voice layer on top of the booking REST API (`../backend`). Guests use voice to *
 ## Prerequisites
 
 - [LiveKit CLI](https://docs.livekit.io/intro/basics/cli/) (`winget install LiveKit.LiveKitCLI` on Windows)
-- Python 3.11+
+- Python **3.11–3.12** recommended (3.14 on Windows can hit asyncio/IPC quirks with the dev reloader)
 - Running booking API (local or public URL)
 
 ## Configure
@@ -36,6 +36,18 @@ For a real room connection:
 
 ```bash
 python -m kuriftu_agent.agent dev
+```
+
+**Windows:** auto-reload uses a pipe that sometimes fails on shutdown (`OSError: [WinError 87]` / `DuplexClosed`). Run without the file watcher:
+
+```bash
+python -m kuriftu_agent.agent dev --no-reload
+```
+
+Or use production-style mode (no dev coloring, no reload):
+
+```bash
+python -m kuriftu_agent.agent start
 ```
 
 ## Deploy to LiveKit Cloud
