@@ -52,7 +52,7 @@ export function VoiceSessionDebug() {
       if (s.participantInfo.identity !== agent.identity) return false;
       return s.streamInfo.attributes?.[behalf] !== guestIdentity;
     });
-  }, [allStreams, agent?.identity, guestIdentity]);
+  }, [allStreams, agent, guestIdentity]);
 
   const userStreamText = useMemo(
     () =>
@@ -145,95 +145,88 @@ export function VoiceSessionDebug() {
     lastMicrophoneError?.message ??
     (isMicrophoneEnabled === false ? "Microphone is off" : null);
 
+  const pre =
+    "max-h-32 overflow-auto whitespace-pre-wrap rounded-sm border border-border bg-white p-3 text-[11px] leading-relaxed text-foreground/90";
+
   return (
-    <div className="mt-4 space-y-4 rounded-xl border border-amber-200/80 bg-amber-50/90 p-4 text-left dark:border-amber-900/60 dark:bg-amber-950/30">
+    <div className="mt-4 space-y-4 rounded-sm border border-border bg-accent-muted/30 p-4 text-left">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-amber-950 dark:text-amber-100">
-          Voice debug
-        </h2>
+        <h2 className="text-sm font-semibold text-foreground">Voice debug</h2>
         <button
           type="button"
           onClick={clearLog}
-          className="rounded-lg border border-amber-300 bg-white px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-800 dark:bg-zinc-900 dark:text-amber-100 dark:hover:bg-zinc-800"
+          className="rounded-sm border border-border bg-white px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-surface-2"
         >
           Clear log
         </button>
       </div>
 
-      <dl className="grid gap-2 text-xs text-amber-950 dark:text-amber-100/90">
+      <dl className="grid gap-2 text-xs text-foreground/90">
         <div className="flex flex-wrap gap-x-3 gap-y-1">
-          <dt className="font-medium text-amber-800 dark:text-amber-200/90">
-            Agent state
-          </dt>
-          <dd className="font-mono">{String(agentState)}</dd>
+          <dt className="font-medium text-muted">Agent state</dt>
+          <dd className="font-mono text-foreground">{String(agentState)}</dd>
         </div>
         <div className="flex flex-wrap gap-x-3 gap-y-1">
-          <dt className="font-medium text-amber-800 dark:text-amber-200/90">
-            Agent in room
-          </dt>
-          <dd className="font-mono">
+          <dt className="font-medium text-muted">Agent in room</dt>
+          <dd className="font-mono text-foreground">
             {agent ? `${agent.identity}` : "(not joined yet)"}
           </dd>
         </div>
         <div className="flex flex-wrap gap-x-3 gap-y-1">
-          <dt className="font-medium text-amber-800 dark:text-amber-200/90">
-            Your mic
-          </dt>
+          <dt className="font-medium text-muted">Your mic</dt>
           <dd>
             {isMicrophoneEnabled ? (
-              <span className="text-emerald-700 dark:text-emerald-400">on</span>
+              <span className="text-emerald-700">on</span>
             ) : (
-              <span className="text-red-700 dark:text-red-400">off</span>
+              <span className="text-danger">off</span>
             )}
             {micProblem ? (
-              <span className="ml-2 text-red-700 dark:text-red-300">
-                — {micProblem}
-              </span>
+              <span className="ml-2 text-danger">— {micProblem}</span>
             ) : null}
           </dd>
         </div>
         <div className="flex flex-wrap gap-x-3 gap-y-1">
-          <dt className="font-medium text-amber-800 dark:text-amber-200/90">
-            Guest identity
-          </dt>
-          <dd className="break-all font-mono text-[11px]">{guestIdentity}</dd>
+          <dt className="font-medium text-muted">Guest identity</dt>
+          <dd className="break-all font-mono text-[11px] text-foreground">
+            {guestIdentity}
+          </dd>
         </div>
       </dl>
 
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-200/80">
-          You — what STT received (room text streams)
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+          You — STT (room text streams)
         </h3>
-        <pre className="max-h-32 overflow-auto whitespace-pre-wrap rounded-lg border border-amber-200/80 bg-white/90 p-3 text-[11px] leading-relaxed text-zinc-800 dark:border-amber-900/50 dark:bg-zinc-950 dark:text-zinc-200">
+        <pre className={pre}>
           {userStreamText ||
             "(empty — if worker logs user_input_transcribed but this stays empty, expand “All transcription streams” and check sender vs lk.publish_on_behalf; if both empty, audio/STT is failing upstream)"}
         </pre>
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-200/80">
-          Agent — TTS / spoken text (track transcription)
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+          Agent — TTS (track transcription)
         </h3>
-        <pre className="max-h-28 overflow-auto whitespace-pre-wrap rounded-lg border border-amber-200/80 bg-white/90 p-3 text-[11px] leading-relaxed text-zinc-800 dark:border-amber-900/50 dark:bg-zinc-950 dark:text-zinc-200">
+        <pre className="max-h-28 overflow-auto whitespace-pre-wrap rounded-sm border border-border bg-white p-3 text-[11px] leading-relaxed text-foreground/90">
           {trackTranscriptionText ||
             "(empty until the agent publishes aligned transcription with audio)"}
         </pre>
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-200/80">
-          Agent — same via room STT streams (if any)
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+          Agent — room STT streams
         </h3>
-        <pre className="max-h-24 overflow-auto whitespace-pre-wrap rounded-lg border border-amber-200/80 bg-white/90 p-3 text-[11px] leading-relaxed text-zinc-800 dark:border-amber-900/50 dark:bg-zinc-950 dark:text-zinc-200">
+        <pre className="max-h-24 overflow-auto whitespace-pre-wrap rounded-sm border border-border bg-white p-3 text-[11px] leading-relaxed text-foreground/90">
           {agentStreamText || "(empty)"}
         </pre>
       </div>
 
-      <details className="rounded-lg border border-amber-200/60 bg-white/60 p-2 dark:border-amber-900/40 dark:bg-zinc-950/40">
-        <summary className="cursor-pointer text-xs font-medium text-amber-900 dark:text-amber-200/90">
+      <details className="rounded-sm border border-border bg-surface-2/80 p-3">
+        <summary className="cursor-pointer text-xs font-semibold text-foreground">
           All transcription streams ({allStreams.length})
         </summary>
-        <ul className="mt-2 max-h-40 space-y-2 overflow-auto text-[11px] text-zinc-700 dark:text-zinc-300">
+        <ul className="mt-2 max-h-40 space-y-2 overflow-auto text-[11px] text-muted">
           {allStreams.map((s, i) => {
             const behalf =
               s.streamInfo.attributes?.[
@@ -242,41 +235,39 @@ export function VoiceSessionDebug() {
             return (
               <li
                 key={`${s.participantInfo.identity}-${s.streamInfo.id}-${i}`}
-                className="border-b border-amber-100/80 pb-2 dark:border-amber-900/30"
+                className="border-b border-border pb-2"
               >
-                <div className="font-mono text-[10px] text-amber-800 dark:text-amber-300/80">
+                <div className="font-mono text-[10px] text-accent">
                   sender: {s.participantInfo.identity}
                   {behalf ? ` · on_behalf: ${behalf}` : ""}
                 </div>
-                <div className="whitespace-pre-wrap">{s.text || "—"}</div>
+                <div className="whitespace-pre-wrap text-foreground/90">
+                  {s.text || "—"}
+                </div>
               </li>
             );
           })}
           {allStreams.length === 0 ? (
-            <li className="text-zinc-500">No streams yet.</li>
+            <li className="text-muted">No streams yet.</li>
           ) : null}
         </ul>
       </details>
 
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-200/80">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
           Event log (last 100)
         </h3>
-        <div className="max-h-56 overflow-auto rounded-lg border border-amber-200/80 bg-black/5 p-2 font-mono text-[10px] leading-snug dark:border-amber-900/50 dark:bg-black/30">
+        <div className="max-h-56 overflow-auto rounded-sm border border-border bg-surface-2/80 p-2 font-mono text-[10px] leading-snug">
           {logLines.length === 0 ? (
-            <p className="text-zinc-500 dark:text-zinc-400">
-              Changes to state and transcripts append here.
-            </p>
+            <p className="text-muted">Changes to state and transcripts append here.</p>
           ) : (
             logLines.map((line) => (
-              <div key={line.id} className="mb-2 border-b border-amber-200/40 pb-1 dark:border-amber-900/30">
-                <span className="text-amber-700 dark:text-amber-400">
-                  {line.time}
-                </span>{" "}
-                <span className="text-violet-700 dark:text-violet-300">
+              <div key={line.id} className="mb-2 border-b border-border pb-1">
+                <span className="text-accent">{line.time}</span>{" "}
+                <span className="text-violet-700">
                   [{line.kind}]
                 </span>
-                <pre className="mt-0.5 whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">
+                <pre className="mt-0.5 whitespace-pre-wrap text-foreground/90">
                   {line.text}
                 </pre>
               </div>
@@ -285,18 +276,17 @@ export function VoiceSessionDebug() {
         </div>
       </div>
 
-      <p className="text-[11px] leading-snug text-amber-900/80 dark:text-amber-200/70">
+      <p className="text-[11px] leading-relaxed text-muted">
         User speech captions are usually sent as text streams from the agent participant with
         attribute{" "}
-        <code className="rounded bg-amber-100/80 px-1 dark:bg-zinc-900">
+        <code className="rounded-md bg-surface-2 px-1 py-0.5 font-mono text-[10px] text-foreground">
           lk.publish_on_behalf
         </code>{" "}
-        set to your identity — not from your own participant id. Compare with the worker:{" "}
-        <code className="rounded bg-amber-100/80 px-1 dark:bg-zinc-900">
+        set to your identity. Compare with the worker{" "}
+        <code className="rounded-md bg-surface-2 px-1 py-0.5 font-mono text-[10px] text-foreground">
           user_input_transcribed
         </code>{" "}
-        when STT runs. If the worker logs STT but this panel stays empty, the transcription topic is not
-        reaching the client; if both are empty, fix audio or STT upstream.
+        logs when STT runs.
       </p>
     </div>
   );

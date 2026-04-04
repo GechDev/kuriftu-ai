@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { z } from "zod";
-import { asyncHandler, zodErrorMessage } from "../lib/http.js";
+import {
+  buildStaySummary,
+  prismaBookingWithRoomResort,
+  prismaRoomWithResort,
+} from "../lib/booking-includes.js";
+import { asyncHandler, routeParamId, zodErrorMessage } from "../lib/http.js";
 import { prisma } from "../lib/prisma.js";
 import type { AuthedRequest } from "../middleware/auth.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -9,7 +14,43 @@ const createSchema = z.object({
   roomId: z.string().min(1),
   bookingId: z.string().optional(),
   message: z.string().min(1).max(2000),
+  serviceCategory: z
+    .enum([
+      "housekeeping",
+      "dining",
+      "spa",
+      "maintenance",
+      "transport",
+      "concierge",
+      "other",
+    ])
+    .optional(),
 });
+
+const serviceRequestInclude = {
+  room: prismaRoomWithResort,
+  booking: {
+    include: prismaBookingWithRoomResort,
+  },
+} as const;
+
+function enrich(sr: {
+  booking: {
+    checkIn: Date;
+    checkOut: Date;
+    totalPrice: number;
+    room: { pricePerNight: number } | null;
+  } | null;
+}) {
+  if (!sr.booking) return sr;
+  return {
+    ...sr,
+    booking: {
+      ...sr.booking,
+      staySummary: buildStaySummary(sr.booking),
+    },
+  };
+}
 
 export const serviceRequestsRouter = Router();
 
@@ -23,7 +64,7 @@ serviceRequestsRouter.post(
       res.status(400).json({ error: zodErrorMessage(parsed.error) });
       return;
     }
-    const { roomId, bookingId, message } = parsed.data;
+    const { roomId, bookingId, message, serviceCategory } = parsed.data;
     const room = await prisma.room.findUnique({ where: { id: roomId } });
     if (!room) {
       res.status(404).json({ error: "Room not found" });
@@ -48,10 +89,11 @@ serviceRequestsRouter.post(
         roomId,
         bookingId: bookingId ?? null,
         message,
+        serviceCategory: serviceCategory ?? null,
       },
-      include: { room: true, booking: true },
+      include: serviceRequestInclude,
     });
-    res.status(201).json({ serviceRequest: sr });
+    res.status(201).json({ serviceRequest: enrich(sr) });
   })
 );
 
@@ -61,8 +103,28 @@ serviceRequestsRouter.get(
     const list = await prisma.serviceRequest.findMany({
       where: { userId: req.userId! },
       orderBy: { createdAt: "desc" },
-      include: { room: true, booking: true },
+      include: serviceRequestInclude,
     });
-    res.json({ serviceRequests: list });
+    res.json({ serviceRequests: list.map((row) => enrich(row)) });
+  })
+);
+
+serviceRequestsRouter.get(
+  "/:id",
+  asyncHandler(async (req: AuthedRequest, res) => {
+    const id = routeParamId(req.params.id);
+    if (!id) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
+    const serviceRequest = await prisma.serviceRequest.findFirst({
+      where: { id, userId: req.userId! },
+      include: serviceRequestInclude,
+    });
+    if (!serviceRequest) {
+      res.status(404).json({ error: "Service request not found" });
+      return;
+    }
+    res.json({ serviceRequest: enrich(serviceRequest) });
   })
 );

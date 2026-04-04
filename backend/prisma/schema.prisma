@@ -19,15 +19,72 @@ model User {
   notifications    Notification[]
 }
 
+model Resort {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  region           String
+  shortDescription String
+  fullDescription  String?
+  address          String
+  /// Voice-friendly overview of the property layout and how to get around.
+  mapOverview      String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  rooms     Room[]
+  services  ResortService[]
+  mapPlaces MapPlace[]
+}
+
+/// On-property offerings: spa, dining, pools, activities, concierge, etc.
+model ResortService {
+  id           String  @id @default(cuid())
+  resortId     String
+  /// e.g. dining, spa, pool, fitness, kids, concierge, transport, in_room, wellness, activities
+  category     String
+  title        String
+  description  String
+  hours        String?
+  locationNote String?
+  howToBook    String?
+
+  resort Resort @relation(fields: [resortId], references: [id], onDelete: Cascade)
+
+  @@index([resortId])
+  @@index([resortId, category])
+}
+
+/// Walkable destinations for directions and “where is …?”
+model MapPlace {
+  id                  String  @id @default(cuid())
+  resortId            String
+  name                String
+  /// e.g. lobby, restaurant, spa, pool, parking, gym, shop, room_tower, landmark
+  category            String
+  building            String?
+  floor               String?
+  directionsFromLobby String
+
+  resort Resort @relation(fields: [resortId], references: [id], onDelete: Cascade)
+
+  @@index([resortId])
+  @@index([resortId, category])
+}
+
 model Room {
   id             String   @id @default(cuid())
   name           String
   description    String?
   pricePerNight  Int
+  resortId       String?
   createdAt      DateTime @default(now())
 
+  resort          Resort?         @relation(fields: [resortId], references: [id], onDelete: SetNull)
   bookings        Booking[]
   serviceRequests ServiceRequest[]
+
+  @@index([resortId])
 }
 
 model Booking {
@@ -62,6 +119,8 @@ model ServiceRequest {
   roomId    String
   bookingId String?
   message   String
+  /// housekeeping, dining, spa, maintenance, transport, concierge, other
+  serviceCategory String?
   status    ServiceRequestStatus @default(PENDING)
   createdAt DateTime             @default(now())
   updatedAt DateTime             @updatedAt

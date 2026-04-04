@@ -1,23 +1,37 @@
 "use client";
 
 import { RequireAuth } from "@/components/require-auth";
-import { Badge, Button, EmptyState, Spinner } from "@/components/ui";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  LinkButton,
+  PageHeader,
+  Spinner,
+} from "@/components/ui";
 import { useAuth } from "@/contexts/auth-context";
 import { api, ApiError } from "@/lib/api";
-import type { Booking } from "@/lib/types";
+import {
+  formatCurrency,
+  formatStayRange,
+  nightsLabel,
+} from "@/lib/guest-format";
+import type { BookingWithSummary } from "@/lib/types";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 type Filter = "upcoming" | "past" | "all";
 
-function fmt(d: string) {
-  return new Date(d).toLocaleDateString(undefined, { dateStyle: "medium" });
+function stayBadge(b: BookingWithSummary) {
+  if (b.checkedOutAt) return { label: "Completed", variant: "muted" as const };
+  if (b.checkedInAt) return { label: "Checked in", variant: "success" as const };
+  return { label: "Confirmed", variant: "accent" as const };
 }
 
 export default function BookingsPage() {
   const { token } = useAuth();
   const [filter, setFilter] = useState<Filter>("upcoming");
-  const [bookings, setBookings] = useState<Booking[] | null>(null);
+  const [bookings, setBookings] = useState<BookingWithSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -33,100 +47,138 @@ export default function BookingsPage() {
   }, [token, filter]);
 
   useEffect(() => {
-    void load();
+    queueMicrotask(() => {
+      void load();
+    });
   }, [load]);
 
   return (
     <RequireAuth>
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          My bookings
-        </h1>
-        <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:py-14">
+        <PageHeader
+          eyebrow="Stays"
+          title="My bookings"
+          description="Every reservation with nights, rate breakdown, and a quick path to guest services for that stay."
+        />
+
+        <div
+          className="mt-10 inline-flex rounded-full border border-border/80 bg-surface p-1 shadow-[var(--shadow-card)]"
+          role="tablist"
+          aria-label="Booking timeframe"
+        >
           {(["upcoming", "past", "all"] as const).map((f) => (
-            <Button
+            <button
               key={f}
-              variant={filter === f ? "primary" : "secondary"}
-              className="!px-3 capitalize"
+              type="button"
+              role="tab"
+              aria-selected={filter === f}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition ${
+                filter === f
+                  ? "bg-accent text-accent-fg shadow-sm"
+                  : "text-muted hover:text-foreground"
+              }`}
               onClick={() => {
                 setBookings(null);
                 setFilter(f);
               }}
             >
-              {f}
-            </Button>
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
           ))}
         </div>
 
         {bookings === null ? (
-          <div className="mt-12 flex justify-center">
+          <div className="mt-20 flex justify-center">
             <Spinner />
           </div>
         ) : error ? (
-          <p className="mt-8 text-red-600">{error}</p>
+          <p className="mt-12 text-sm text-danger">{error}</p>
         ) : bookings.length === 0 ? (
-          <div className="mt-8">
+          <div className="mt-12">
             <EmptyState
               title="No bookings"
-              description={`Nothing in "${filter}" right now.`}
-              action={
-                <Link href="/rooms">
-                  <Button>Browse rooms</Button>
-                </Link>
-              }
+              description={`Nothing in “${filter}” right now. Browse rooms when you’re ready to plan a stay.`}
+              action={<LinkButton href="/rooms">Browse rooms</LinkButton>}
             />
           </div>
         ) : (
-          <div className="mt-8 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Room</th>
-                  <th className="px-4 py-3 font-medium">Check-in</th>
-                  <th className="px-4 py-3 font-medium">Check-out</th>
-                  <th className="px-4 py-3 font-medium">Total</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((b) => (
-                  <tr
-                    key={b.id}
-                    className="border-b border-zinc-100 dark:border-zinc-800/80"
+          <ul className="mt-12 grid gap-5">
+            {bookings.map((b, i) => {
+              const badge = stayBadge(b);
+              const reqCount = b._count?.serviceRequests ?? 0;
+              const { staySummary } = b;
+              return (
+                <li
+                  key={b.id}
+                  className="animate-fade-up"
+                  style={{ animationDelay: `${Math.min(i * 0.04, 0.2)}s` }}
+                >
+                  <Card
+                    hover
+                    className="group relative overflow-hidden p-0 transition"
                   >
-                    <td className="px-4 py-3 font-medium">
-                      {b.room?.name ?? b.roomId.slice(0, 8)}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                      {fmt(b.checkIn)}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                      {fmt(b.checkOut)}
-                    </td>
-                    <td className="px-4 py-3">${b.totalPrice}</td>
-                    <td className="px-4 py-3">
-                      {b.checkedOutAt ? (
-                        <Badge variant="muted">Checked out</Badge>
-                      ) : b.checkedInAt ? (
-                        <Badge variant="success">Checked in</Badge>
-                      ) : (
-                        <Badge>Confirmed</Badge>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/bookings/${b.id}`}
-                        className="font-medium text-zinc-900 underline dark:text-zinc-100"
-                      >
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    <Link
+                      href={`/bookings/${b.id}`}
+                      className="absolute inset-0 z-0 rounded-[1.25rem]"
+                      aria-label={`View booking: ${b.room?.name ?? "Stay"}`}
+                    />
+                    <div className="pointer-events-none relative z-[1] flex flex-col gap-6 p-6 sm:flex-row sm:items-start sm:justify-between sm:p-8">
+                      <div className="min-w-0 flex-1 space-y-3">
+                        {b.room?.resort ? (
+                          <p className="pointer-events-auto text-[11px] font-semibold uppercase tracking-wider text-muted">
+                            <Link
+                              href={`/resorts/${b.room.resort.slug}`}
+                              className="relative z-[2] text-accent hover:underline"
+                            >
+                              {b.room.resort.name}
+                            </Link>
+                            {b.room.resort.region ? ` · ${b.room.resort.region}` : ""}
+                          </p>
+                        ) : null}
+                        <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                          {b.room?.name ?? "Stay"}
+                        </h2>
+                        <p className="text-[15px] text-muted">
+                          {formatStayRange(b.checkIn, b.checkOut)}
+                          <span className="text-border"> · </span>
+                          {nightsLabel(staySummary.nights)}
+                        </p>
+                        <div className="flex flex-wrap gap-2 text-sm">
+                          <span className="rounded-sm bg-surface-2 px-2.5 py-1 text-muted">
+                            {formatCurrency(staySummary.pricePerNight)} / night
+                          </span>
+                          {reqCount > 0 ? (
+                            <span className="rounded-lg bg-accent-muted/50 px-2.5 py-1 text-accent">
+                              {reqCount} service request{reqCount === 1 ? "" : "s"}
+                            </span>
+                          ) : (
+                            <span className="rounded-lg border border-dashed border-border px-2.5 py-1 text-muted">
+                              No requests yet
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-start gap-4 sm:items-end">
+                        <Badge variant={badge.variant}>{badge.label}</Badge>
+                        <div className="text-right">
+                          <p className="text-xs font-medium text-muted">Total</p>
+                          <p className="text-2xl font-semibold tracking-tight text-foreground">
+                            {formatCurrency(staySummary.totalPrice)}
+                          </p>
+                        </div>
+                        <span className="text-sm font-semibold text-accent group-hover:underline">
+                          Details
+                          <span aria-hidden className="ml-1">
+                            →
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </Card>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
     </RequireAuth>

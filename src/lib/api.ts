@@ -1,14 +1,41 @@
 import type {
   Booking,
+  BookingWithSummary,
+  MapPlaceItem,
   Notification,
+  Resort,
+  ResortListItem,
+  ResortServiceItem,
   Room,
   ServiceRequest,
   ServiceRequestStatus,
+  StaySummary,
   User,
 } from "./types";
 
-const getBase = () =>
-  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4000";
+/**
+ * Browser calls the booking API either:
+ * - Same-origin `/api/backend/...` (Next rewrite → BACKEND_INTERNAL_URL) — avoids CORS issues locally and when API has strict CORS.
+ * - Or absolute `NEXT_PUBLIC_API_URL` when you want the browser to talk to the API host directly.
+ */
+function getApiBase(): string {
+  const u = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (u) return u.replace(/\/$/, "");
+  return "/api/backend";
+}
+
+function buildUrl(path: string): string {
+  const base = getApiBase();
+  if (base.startsWith("http://") || base.startsWith("https://")) {
+    return `${base}${path}`;
+  }
+  const sub = path.startsWith("/api/") ? path.slice(5) : path.replace(/^\//, "");
+  const prefix = base.endsWith("/") ? base.slice(0, -1) : base;
+  return `${prefix}/${sub}`;
+}
+
+/** Browser fetch has no default timeout; hung API = hung UI (e.g. auth spinner forever). */
+const REQUEST_TIMEOUT_MS = 15_000;
 
 export class ApiError extends Error {
   constructor(
@@ -21,23 +48,51 @@ export class ApiError extends Error {
   }
 }
 
+function isAbortError(e: unknown): boolean {
+  if (e instanceof DOMException && e.name === "AbortError") return true;
+  if (e instanceof Error && e.name === "AbortError") return true;
+  return false;
+}
+
 async function request<T>(
   path: string,
   options: RequestInit & { token?: string | null } = {}
 ): Promise<T> {
-  const { token, ...init } = options;
+  const { token, signal: callerSignal, ...init } = options;
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(init.headers as Record<string, string>),
   };
   if (token) (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${getBase()}${path}`, {
-    ...init,
-    headers,
-    mode: "cors",
-    credentials: "omit",
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  if (callerSignal) {
+    if (callerSignal.aborted) controller.abort();
+    else callerSignal.addEventListener("abort", () => controller.abort(), { once: true });
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(buildUrl(path), {
+      ...init,
+      headers,
+      mode: "cors",
+      credentials: "omit",
+      signal: controller.signal,
+    });
+  } catch (e: unknown) {
+    clearTimeout(timeoutId);
+    if (isAbortError(e)) {
+      throw new ApiError(
+        "Request timed out. Start the booking API and ensure Next can reach it (BACKEND_INTERNAL_URL / port 4000).",
+        408
+      );
+    }
+    throw new ApiError(e instanceof Error ? e.message : "Network error", 0);
+  }
+  clearTimeout(timeoutId);
+
   const text = await res.text();
   let data: unknown = null;
   if (text) {
@@ -73,6 +128,40 @@ export const api = {
   me: (token: string) =>
     request<{ user: User }>("/api/me", { token }),
 
+  resorts: {
+    list: () => request<{ resorts: ResortListItem[] }>("/api/resorts"),
+    get: (identifier: string) =>
+      request<{ resort: Resort }>(`/api/resorts/${encodeURIComponent(identifier)}`),
+    services: (
+      identifier: string,
+      params?: { category?: string; q?: string }
+    ) => {
+      const q = new URLSearchParams();
+      if (params?.category) q.set("category", params.category);
+      if (params?.q) q.set("q", params.q);
+      const suffix = q.toString() ? `?${q}` : "";
+      return request<{
+        resortId: string;
+        resortName: string;
+        services: ResortServiceItem[];
+      }>(`/api/resorts/${encodeURIComponent(identifier)}/services${suffix}`);
+    },
+    mapPlaces: (
+      identifier: string,
+      params?: { category?: string; q?: string }
+    ) => {
+      const q = new URLSearchParams();
+      if (params?.category) q.set("category", params.category);
+      if (params?.q) q.set("q", params.q);
+      const suffix = q.toString() ? `?${q}` : "";
+      return request<{
+        resortId: string;
+        resortName: string;
+        mapPlaces: MapPlaceItem[];
+      }>(`/api/resorts/${encodeURIComponent(identifier)}/map-places${suffix}`);
+    },
+  },
+
   rooms: {
     list: () => request<{ rooms: Room[] }>("/api/rooms"),
     get: (id: string) => request<{ room: Room }>(`/api/rooms/${id}`),
@@ -95,18 +184,21 @@ export const api = {
       token: string,
       body: { roomId: string; checkIn: string; checkOut: string }
     ) =>
-      request<{ booking: Booking }>("/api/bookings", {
+      request<{ booking: Booking; staySummary: StaySummary }>("/api/bookings", {
         method: "POST",
         token,
         body: JSON.stringify(body),
       }),
     list: (token: string, filter: "upcoming" | "past" | "all" = "all") =>
-      request<{ bookings: Booking[]; filter: string }>(
+      request<{ bookings: BookingWithSummary[]; filter: string }>(
         `/api/bookings?filter=${filter}`,
         { token }
       ),
     get: (token: string, id: string) =>
-      request<{ booking: Booking }>(`/api/bookings/${id}`, { token }),
+      request<{ booking: Booking; staySummary: StaySummary }>(
+        `/api/bookings/${id}`,
+        { token }
+      ),
   },
 
   serviceRequests: {
@@ -114,9 +206,19 @@ export const api = {
       request<{ serviceRequests: ServiceRequest[] }>("/api/service-requests", {
         token,
       }),
+    get: (token: string, id: string) =>
+      request<{ serviceRequest: ServiceRequest }>(
+        `/api/service-requests/${encodeURIComponent(id)}`,
+        { token }
+      ),
     create: (
       token: string,
-      body: { roomId: string; message: string; bookingId?: string }
+      body: {
+        roomId: string;
+        message: string;
+        bookingId?: string;
+        serviceCategory?: ServiceRequest["serviceCategory"];
+      }
     ) =>
       request<{ serviceRequest: ServiceRequest }>("/api/service-requests", {
         method: "POST",
@@ -166,7 +268,12 @@ export const api = {
       ),
     createRoom: (
       token: string,
-      body: { name: string; description?: string; pricePerNight: number }
+      body: {
+        name: string;
+        description?: string;
+        pricePerNight: number;
+        resortId?: string;
+      }
     ) =>
       request<{ room: Room }>("/api/admin/rooms", {
         method: "POST",

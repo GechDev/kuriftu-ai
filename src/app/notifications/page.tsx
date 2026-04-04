@@ -1,7 +1,14 @@
 "use client";
 
 import { RequireAuth } from "@/components/require-auth";
-import { Badge, Button, Card, EmptyState, Spinner } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  PageHeader,
+  Spinner,
+} from "@/components/ui";
 import { useAuth } from "@/contexts/auth-context";
 import { api, ApiError } from "@/lib/api";
 import type { Notification } from "@/lib/types";
@@ -24,7 +31,9 @@ export default function NotificationsPage() {
   }, [token]);
 
   useEffect(() => {
-    void load();
+    queueMicrotask(() => {
+      void load();
+    });
   }, [load]);
 
   async function markOne(id: string) {
@@ -51,61 +60,64 @@ export default function NotificationsPage() {
 
   return (
     <RequireAuth>
-      <div className="mx-auto max-w-2xl px-4 py-10">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Notifications
-          </h1>
-          {unread > 0 ? (
-            <Button
-              variant="secondary"
-              className="!text-sm"
-              onClick={() => void markAll()}
-            >
-              Mark all read
-            </Button>
-          ) : null}
-        </div>
+      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:py-14">
+        <PageHeader
+          eyebrow="Inbox"
+          title="Notifications"
+          description="Booking confirmations and stay updates land here."
+          action={
+            unread > 0 ? (
+              <Button
+                variant="secondary"
+                className="shrink-0"
+                onClick={() => void markAll()}
+              >
+                Mark all read
+              </Button>
+            ) : null
+          }
+        />
 
         {items === null ? (
-          <div className="mt-12 flex justify-center">
+          <div className="mt-16 flex justify-center">
             <Spinner />
           </div>
         ) : error ? (
-          <p className="mt-8 text-red-600">{error}</p>
+          <p className="mt-10 text-sm text-danger">{error}</p>
         ) : items.length === 0 ? (
-          <div className="mt-8">
+          <div className="mt-10">
             <EmptyState
               title="No notifications"
               description="Booking confirmations and updates appear here."
             />
           </div>
         ) : (
-          <ul className="mt-8 space-y-3">
+          <ul className="mt-10 space-y-4">
             {items.map((n) => (
               <li key={n.id}>
                 <Card
+                  hover
                   className={
-                    n.read ? "opacity-70" : "border-zinc-300 dark:border-zinc-600"
+                    n.read
+                      ? "opacity-75"
+                      : "border-accent/30 shadow-md shadow-accent/5"
                   }
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
-                      {n.title}
-                    </h2>
-                    {!n.read ? <Badge variant="warning">New</Badge> : null}
+                    <h2 className="font-semibold text-foreground">{n.title}</h2>
+                    {!n.read ? <Badge variant="accent">New</Badge> : null}
                   </div>
-                  <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <p className="mt-2 text-sm leading-relaxed text-muted">
                     {n.body}
                   </p>
-                  <div className="mt-3 flex items-center justify-between gap-2">
-                    <time className="text-xs text-zinc-500">
+                  <div className="mt-4 flex items-center justify-between gap-2">
+                    <time className="text-xs text-muted">
                       {new Date(n.createdAt).toLocaleString()}
                     </time>
                     {!n.read ? (
                       <Button
                         variant="ghost"
-                        className="!px-2 !py-1 !text-xs"
+                        className="!px-3 !py-1.5 !text-xs"
                         onClick={() => void markOne(n.id)}
                       >
                         Mark read

@@ -15,6 +15,7 @@ const roomSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   pricePerNight: z.number().int().positive(),
+  resortId: z.string().min(1).optional(),
 });
 
 const statusSchema = z.object({
@@ -33,7 +34,13 @@ adminRouter.post(
       res.status(400).json({ error: zodErrorMessage(parsed.error) });
       return;
     }
-    const room = await prisma.room.create({ data: parsed.data });
+    const { resortId, ...rest } = parsed.data;
+    const room = await prisma.room.create({
+      data: {
+        ...rest,
+        resortId: resortId ?? null,
+      },
+    });
     res.status(201).json({ room });
   })
 );

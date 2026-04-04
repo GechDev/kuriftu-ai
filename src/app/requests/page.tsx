@@ -5,7 +5,7 @@ export default function ServiceRequestsPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-[40vh] items-center justify-center text-zinc-500">
+        <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted">
           Loading…
         </div>
       }

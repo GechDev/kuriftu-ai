@@ -34,11 +34,12 @@ export function buildCorsOptions(): CorsOptions {
   if (isProd) {
     if (allowed.length === 0) {
       console.warn(
-        "[cors] NODE_ENV=production but CORS_ORIGIN is empty — cross-origin API calls will be blocked. Set CORS_ORIGIN to a comma-separated list of allowed origins."
+        "[cors] NODE_ENV=production and CORS_ORIGIN is empty — reflecting request Origin (like dev). " +
+          "Set CORS_ORIGIN to an explicit comma-separated allowlist before real production traffic."
       );
       return {
         ...shared,
-        origin: false,
+        origin: true,
       };
     }
     return {
