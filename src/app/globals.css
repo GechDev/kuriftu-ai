@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f8fb;
+  --foreground: #0f172a;
+  --primary: #2a4d6e;
+  --accent: #6c63ff;
+  --secondary: #4ecca3;
+  --card: #ffffff;
+  --muted: #64748b;
+  --border: rgba(42, 77, 110, 0.12);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: #2a4d6e;
+  --color-accent: #6c63ff;
+  --color-secondary: #4ecca3;
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --shadow-soft: 0 4px 24px -4px rgba(42, 77, 110, 0.12),
+    0 8px 48px -12px rgba(108, 99, 255, 0.08);
+  --shadow-glow: 0 0 0 1px rgba(108, 99, 255, 0.15), 0 12px 40px -8px rgba(108, 99, 255, 0.25);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* Smooth scroll for in-page anchors */
+html {
+  scroll-behavior: smooth;
+}
