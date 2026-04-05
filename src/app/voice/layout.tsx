@@ -1,0 +1,9 @@
+import "@livekit/components-styles";
+
+export default function VoiceLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
+}
