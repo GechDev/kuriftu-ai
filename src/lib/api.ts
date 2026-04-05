@@ -291,4 +291,49 @@ export const api = {
         { method: "PATCH", token }
       ),
   },
+
+  pricing: {
+    adminPreview: (token: string) =>
+      request<{ services: import("./data/types").KuriftuServicePricingRow[]; updatedAt: number }>(
+        "/api/pricing/admin/preview",
+        { token }
+      ),
+    adminConfirm: (
+      token: string,
+      body?: { serviceIds?: string[]; applyAll?: boolean }
+    ) =>
+      request<{
+        success: boolean;
+        applied: {
+          id: string;
+          name: string;
+          previousPublished: number;
+          newPublished: number;
+        }[];
+        message: string;
+      }>("/api/pricing/admin/confirm", {
+        method: "POST",
+        token,
+        body: JSON.stringify(body ?? { applyAll: true }),
+      }),
+  },
+
+  public: {
+    serviceCatalog: (slug: string) =>
+      request<{
+        resort: { id: string; name: string; slug: string; region: string };
+        services: Array<{
+          id: string;
+          category: string;
+          title: string;
+          description: string;
+          hours: string | null;
+          locationNote: string | null;
+          howToBook: string | null;
+          imageUrl: string | null;
+          basePrice: number;
+          publishedPrice: number;
+        }>;
+      }>(`/api/public/resorts/${encodeURIComponent(slug)}/services-catalog`),
+  },
 };

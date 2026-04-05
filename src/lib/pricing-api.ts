@@ -1,57 +1,49 @@
 import type { KuriftuServicePricingRow } from "@/lib/data/types";
+import { api } from "@/lib/api";
 
-function apiBase(): string {
-  const base = process.env.NEXT_PUBLIC_KURIFTU_API_URL?.replace(/\/$/, "");
-  return base ?? "http://127.0.0.1:5000";
-}
+export type PublicCatalogService = {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  hours: string | null;
+  locationNote: string | null;
+  howToBook: string | null;
+  imageUrl: string | null;
+  basePrice: number;
+  publishedPrice: number;
+};
 
-export async function fetchKuriftuServicePricing(): Promise<{
-  services: KuriftuServicePricingRow[];
-  updatedAt: number;
-}> {
-  const res = await fetch(`${apiBase()}/api/kuriftu/service-pricing`, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    throw new Error(`Pricing API ${res.status}: ${res.statusText}`);
+export async function fetchAdminPricingPreview(
+  token: string | null,
+): Promise<{ services: KuriftuServicePricingRow[]; updatedAt: number }> {
+  if (!token) {
+    throw new Error("Sign in as a manager or admin to load live pricing.");
   }
-  const data = (await res.json()) as { services: KuriftuServicePricingRow[]; updatedAt: number };
-  return data;
+  return api.pricing.adminPreview(token);
 }
 
-export async function confirmKuriftuAiPrices(options?: { ids?: number[]; applyAll?: boolean }): Promise<{
+export async function confirmKuriftuAiPrices(
+  token: string | null,
+  options?: { serviceIds?: string[]; applyAll?: boolean },
+): Promise<{
   success: boolean;
-  applied: { id: number; name: string; previousPublished: number; newPublished: number }[];
+  applied: { id: string; name: string; previousPublished: number; newPublished: number }[];
   message: string;
 }> {
-  const body =
-    options?.ids && options.ids.length
-      ? { applyAll: false, ids: options.ids }
-      : { applyAll: options?.applyAll !== false, ids: options?.ids };
-
-  const res = await fetch(`${apiBase()}/api/kuriftu/confirm-prices`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `Confirm failed (${res.status})`);
+  if (!token) {
+    throw new Error("Sign in as a manager or admin.");
   }
-  return res.json() as Promise<{
-    success: boolean;
-    applied: { id: number; name: string; previousPublished: number; newPublished: number }[];
-    message: string;
-  }>;
+  const body =
+    options?.serviceIds && options.serviceIds.length > 0
+      ? { applyAll: false as const, serviceIds: options.serviceIds }
+      : { applyAll: options?.applyAll !== false };
+  return api.pricing.adminConfirm(token, body);
 }
 
-export async function checkKuriftuPricingBackend(): Promise<boolean> {
-  try {
-    const res = await fetch(`${apiBase()}/api/kuriftu/health`, { cache: "no-store" });
-    return res.ok;
-  } catch {
-    return false;
-  }
+export async function fetchPublicServiceCatalog(slug: string): Promise<{
+  resort: { id: string; name: string; slug: string; region: string };
+  services: PublicCatalogService[];
+}> {
+  return api.public.serviceCatalog(slug);
 }

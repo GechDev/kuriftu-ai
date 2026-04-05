@@ -2,7 +2,6 @@
 
 import {
   BarVisualizer,
-  type AgentState,
   useLocalParticipant,
   useTrackVolume,
   useVoiceAssistant,
@@ -14,7 +13,7 @@ function cn(...parts: (string | undefined | false)[]) {
   return parts.filter(Boolean).join(" ");
 }
 
-function agentStateLabel(state: AgentState): string {
+function agentStateLabel(state: string): string {
   switch (state) {
     case "listening":
       return "Listening";

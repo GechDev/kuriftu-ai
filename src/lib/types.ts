@@ -1,7 +1,10 @@
+export type UserRole = "GUEST" | "MANAGER" | "ADMIN";
+
 export type User = {
   id: string;
   email: string;
   isAdmin: boolean;
+  role: UserRole;
   createdAt?: string;
 };
 

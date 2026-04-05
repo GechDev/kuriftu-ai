@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@/lib/api";
-import type { User } from "@/lib/types";
+import type { User, UserRole } from "@/lib/types";
 import {
   createContext,
   useCallback,
@@ -41,7 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(t);
     try {
       const { user: u } = await api.me(t);
-      setUser(u);
+      const role = (u as User).role ?? ("GUEST" as UserRole);
+      setUser({ ...u, role });
     } catch {
       localStorage.removeItem(TOKEN_KEY);
       setToken(null);
@@ -78,14 +79,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { user: u, token: tok } = await api.auth.login(email, password);
     localStorage.setItem(TOKEN_KEY, tok);
     setToken(tok);
-    setUser(u);
+    const role = (u as User).role ?? ("GUEST" as UserRole);
+    setUser({ ...u, role });
   }, []);
 
   const register = useCallback(async (email: string, password: string) => {
     const { user: u, token: tok } = await api.auth.register(email, password);
     localStorage.setItem(TOKEN_KEY, tok);
     setToken(tok);
-    setUser(u);
+    const role = (u as User).role ?? ("GUEST" as UserRole);
+    setUser({ ...u, role });
   }, []);
 
   const logout = useCallback(() => {

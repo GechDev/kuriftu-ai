@@ -52,10 +52,12 @@ export interface AiExplanation {
   confidence: number;
 }
 
-/** Live payload from Kuriftu Python pricing engine (GET /api/kuriftu/service-pricing) */
+/** Admin pricing preview from Node API (GET /api/pricing/admin/preview) */
 export interface KuriftuServicePricingRow {
   id: string;
-  numericId: number;
+  resortSlug?: string;
+  resortName?: string;
+  imageUrl?: string | null;
   name: string;
   category: string;
   basePrice: number;

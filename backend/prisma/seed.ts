@@ -10,8 +10,27 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: adminEmail },
-    create: { email: adminEmail, passwordHash: hash, isAdmin: true },
-    update: { passwordHash: hash, isAdmin: true },
+    create: { email: adminEmail, passwordHash: hash, isAdmin: true, role: "ADMIN" },
+    update: { passwordHash: hash, isAdmin: true, role: "ADMIN" },
+  });
+
+  const managerEmail = process.env.SEED_MANAGER_EMAIL ?? "manager@demo.local";
+  const managerPassword = process.env.SEED_MANAGER_PASSWORD ?? "manager123";
+  const managerHash = await bcrypt.hash(managerPassword, 10);
+  await prisma.user.upsert({
+    where: { email: managerEmail },
+    create: {
+      email: managerEmail,
+      passwordHash: managerHash,
+      isAdmin: false,
+      role: "MANAGER",
+    },
+    update: { passwordHash: managerHash, role: "MANAGER" },
+  });
+
+  await prisma.user.updateMany({
+    where: { isAdmin: true, role: "GUEST" },
+    data: { role: "ADMIN" },
   });
 
   const lake = await prisma.resort.upsert({
@@ -399,7 +418,67 @@ async function main() {
     }
   }
 
-  console.log("Seed OK:", { adminEmail, adminPassword: "(hidden)", resorts: [lake.slug, garden.slug] });
+  await seedServicePricingAndImages();
+
+  console.log("Seed OK:", {
+    adminEmail,
+    adminPassword: "(hidden)",
+    managerEmail,
+    managerPassword: "(hidden)",
+    resorts: [lake.slug, garden.slug],
+  });
+}
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  dining:
+    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1600&q=85",
+  spa: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1600&q=85",
+  wellness:
+    "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1600&q=85",
+  pool: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1600&q=85",
+  fitness:
+    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1600&q=85",
+  activities:
+    "https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1600&q=85",
+  transport:
+    "https://images.unsplash.com/photo-1449965408869-eaa3f487e34f?auto=format&fit=crop&w=1600&q=85",
+  concierge:
+    "https://images.unsplash.com/photo-1566073771259-6a850609994b?auto=format&fit=crop&w=1600&q=85",
+  in_room:
+    "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1600&q=85",
+  kids: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=1600&q=85",
+  default:
+    "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1600&q=85",
+};
+
+function hashTitle(title: string): number {
+  let h = 0;
+  for (let i = 0; i < title.length; i++) h = (Math.imul(31, h) + title.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function priceCentsForService(title: string): number {
+  return 4500 + (hashTitle(title) % 32000);
+}
+
+function imageForCategory(category: string): string {
+  const k = category.toLowerCase().trim();
+  return CATEGORY_IMAGES[k] ?? CATEGORY_IMAGES.default;
+}
+
+async function seedServicePricingAndImages() {
+  const services = await prisma.resortService.findMany();
+  for (const s of services) {
+    const base = priceCentsForService(s.title);
+    await prisma.resortService.update({
+      where: { id: s.id },
+      data: {
+        imageUrl: imageForCategory(s.category),
+        basePriceCents: base,
+        publishedPriceCents: base,
+      },
+    });
+  }
 }
 
 main()

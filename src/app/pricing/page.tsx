@@ -1,516 +1,334 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/SafeImage";
 import {
   Star,
   Clock,
-  Users,
-  CheckCircle,
   Sparkles,
-  TrendingUp,
-  Filter,
   Grid,
   List,
   Heart,
   Share2,
-  Info,
-  Zap,
-  Shield,
-  Award,
+  Loader2,
+  RefreshCw,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ServiceDetailModal } from "@/components/services/ServiceDetailModal";
+import { fetchPublicServiceCatalog, type PublicCatalogService } from "@/lib/pricing-api";
 import { resortImages } from "@/lib/resortImages";
 
-// Mock service data - this would come from your API
-const mockServices = [
-  {
-    id: 1,
-    name: "Luxury Spa Package",
-    category: "Wellness",
-    basePrice: 299,
-    aiOptimizedPrice: 279,
-    aiConfirmed: true,
-    rating: 4.8,
-    reviews: 234,
-    image: resortImages.spa,
-    description: "Full day spa experience with massage, facial, and wellness consultation",
-    duration: "4 hours",
-    capacity: "1-2 people",
-    features: ["Deep tissue massage", "Anti-aging facial", "Aromatherapy", "Healthy lunch"],
-    discount: 7,
-    trending: true,
-    popular: true,
-  },
-  {
-    id: 2,
-    name: "Romantic Dinner Experience",
-    category: "Dining",
-    basePrice: 450,
-    aiOptimizedPrice: 425,
-    aiConfirmed: true,
-    rating: 4.9,
-    reviews: 189,
-    image: resortImages.dining,
-    description: "Private beachfront dining with personal chef and sommelier",
-    duration: "3 hours",
-    capacity: "2 people",
-    features: ["Private beach setup", "5-course menu", "Wine pairing", "Live music"],
-    discount: 6,
-    trending: false,
-    popular: true,
-  },
-  {
-    id: 3,
-    name: "Adventure Water Sports",
-    category: "Activities",
-    basePrice: 180,
-    aiOptimizedPrice: 165,
-    aiConfirmed: false,
-    rating: 4.6,
-    reviews: 156,
-    image: resortImages.tropicalPool,
-    description: "Complete water sports package with instructor guidance",
-    duration: "3 hours",
-    capacity: "1-4 people",
-    features: ["Jet skiing", "Parasailing", "Snorkeling", "Equipment included"],
-    discount: 8,
-    trending: true,
-    popular: false,
-  },
-  {
-    id: 4,
-    name: "Business Conference Package",
-    category: "Business",
-    basePrice: 1200,
-    aiOptimizedPrice: 1150,
-    aiConfirmed: true,
-    rating: 4.7,
-    reviews: 98,
-    image: resortImages.lobby,
-    description: "Full-day conference facility with catering and tech support",
-    duration: "8 hours",
-    capacity: "20-50 people",
-    features: ["Conference room", "AV equipment", "Catering", "Tech support"],
-    discount: 4,
-    trending: false,
-    popular: false,
-  },
-  {
-    id: 5,
-    name: "Family Fun Day",
-    category: "Family",
-    basePrice: 320,
-    aiOptimizedPrice: 295,
-    aiConfirmed: true,
-    rating: 4.8,
-    reviews: 312,
-    image: resortImages.infinityPool,
-    description: "All-inclusive family activities with meals and entertainment",
-    duration: "6 hours",
-    capacity: "2-6 people",
-    features: ["Pool access", "Kids club", "Family lunch", "Game room"],
-    discount: 8,
-    trending: true,
-    popular: true,
-  },
-  {
-    id: 6,
-    name: "Yoga & Meditation Retreat",
-    category: "Wellness",
-    basePrice: 150,
-    aiOptimizedPrice: 145,
-    aiConfirmed: true,
-    rating: 4.9,
-    reviews: 267,
-    image: resortImages.wellnessDetail,
-    description: "Morning yoga session with guided meditation and healthy breakfast",
-    duration: "2 hours",
-    capacity: "10-15 people",
-    features: ["Hatha yoga", "Meditation", "Healthy breakfast", "Zen garden access"],
-    discount: 3,
-    trending: false,
-    popular: false,
-  },
-];
+const RESORT_SLUG = "kuriftu-lakeside";
 
-const categories = ["All", "Wellness", "Dining", "Activities", "Business", "Family"];
-const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "Rating", "Most Popular"];
+function categoryLabel(cat: string): string {
+  return cat.charAt(0).toUpperCase() + cat.slice(1).replace(/_/g, " ");
+}
+
+function buildModalService(s: PublicCatalogService) {
+  const img = s.imageUrl ?? resortImages.spa;
+  return {
+    id: s.id,
+    name: s.title,
+    category: categoryLabel(s.category),
+    basePrice: s.basePrice,
+    aiOptimizedPrice: s.publishedPrice,
+    aiConfirmed: true,
+    rating: 4.8,
+    reviews: 120,
+    image: img,
+    description: s.description,
+    duration: s.hours ?? "See concierge",
+    capacity: "Guests",
+    features: [s.locationNote, s.howToBook].filter(Boolean) as string[],
+    discount:
+      s.basePrice > s.publishedPrice
+        ? Math.round(((s.basePrice - s.publishedPrice) / s.basePrice) * 100)
+        : 0,
+    trending: false,
+    popular: s.publishedPrice > 150,
+  };
+}
 
 export default function PricingPage() {
-  const [services, setServices] = useState(mockServices);
+  const [services, setServices] = useState<PublicCatalogService[]>([]);
+  const [resortName, setResortName] = useState("Kuriftu");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("Featured");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [selectedService, setSelectedService] = useState<any>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [selectedService, setSelectedService] = useState<ReturnType<typeof buildModalService> | null>(
+    null,
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Sync with confirmed prices from service optimizer
-  useEffect(() => {
-    const confirmedPrices = localStorage.getItem('confirmedPrices');
-    if (confirmedPrices) {
-      const parsed = JSON.parse(confirmedPrices);
-      setServices(prev => prev.map(service => 
-        parsed[service.id] 
-          ? { ...service, aiOptimizedPrice: parsed[service.id], aiConfirmed: true }
-          : service
-      ));
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { resort, services: list } = await fetchPublicServiceCatalog(RESORT_SLUG);
+      setResortName(resort.name);
+      setServices(list);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load catalog");
+      setServices([]);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  const filteredServices = services.filter(service => 
-    selectedCategory === "All" || service.category === selectedCategory
-  );
+  useEffect(() => {
+    void load();
+  }, [load]);
 
-  const sortedServices = [...filteredServices].sort((a, b) => {
+  const categories = useMemo(() => {
+    const u = new Set(services.map((s) => categoryLabel(s.category)));
+    return ["All", ...Array.from(u).sort()];
+  }, [services]);
+
+  const filteredServices = useMemo(() => {
+    return services.filter((s) => {
+      if (selectedCategory === "All") return true;
+      return categoryLabel(s.category) === selectedCategory;
+    });
+  }, [services, selectedCategory]);
+
+  const sortedServices = useMemo(() => {
+    const copy = [...filteredServices];
     switch (sortBy) {
       case "Price: Low to High":
-        return a.aiOptimizedPrice - b.aiOptimizedPrice;
+        return copy.sort((a, b) => a.publishedPrice - b.publishedPrice);
       case "Price: High to Low":
-        return b.aiOptimizedPrice - a.aiOptimizedPrice;
-      case "Rating":
-        return b.rating - a.rating;
-      case "Most Popular":
-        return b.reviews - a.reviews;
+        return copy.sort((a, b) => b.publishedPrice - a.publishedPrice);
+      case "Name":
+        return copy.sort((a, b) => a.title.localeCompare(b.title));
       default:
-        return 0;
+        return copy;
     }
-  });
+  }, [filteredServices, sortBy]);
 
-  const toggleFavorite = (id: number) => {
-    setFavorites(prev => 
-      prev.includes(id) ? prev.filter(fav => fav !== id) : [...prev, id]
-    );
-  };
-
-  const openServiceDetail = (service: any) => {
-    setSelectedService(service);
-    setIsModalOpen(true);
-  };
-
-  const handleBook = (service: any) => {
-    // Handle booking logic here
-    console.log('Booking service:', service);
-    setIsModalOpen(false);
-    // You could add a toast notification here
+  const toggleFavorite = (id: string) => {
+    setFavorites((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10">
-        <div className="container mx-auto px-4 py-16">
+    <div className="min-h-screen bg-gradient-to-b from-white to-secondary/5">
+      <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/[0.07] via-white to-secondary/10">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center max-w-4xl mx-auto"
+            transition={{ duration: 0.45 }}
+            className="text-center"
           >
-            <div className="flex justify-center mb-6">
-              <div className="p-3 bg-primary/10 rounded-full">
-                <Sparkles className="w-8 h-8 text-primary" />
-              </div>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-              Premium Resort Services
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8">
-              Experience luxury with AI-optimized pricing. Our intelligent pricing system ensures you get the best value for every service.
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">
+              {resortName}
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Badge tone="secondary" className="text-sm px-4 py-2">
-                <Zap className="w-4 h-4 mr-2" />
-                AI-Optimized Prices
+            <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
+              Resort services & experiences
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
+              Live pricing from our reservation system. Rates reflect staff-confirmed published prices
+             —including updates after AI review in the service optimizer.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+              <Badge tone="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden />
+                Database-backed rates
               </Badge>
-              <Badge tone="secondary" className="text-sm px-4 py-2">
-                <Shield className="w-4 h-4 mr-2" />
-                Best Price Guarantee
-              </Badge>
-              <Badge tone="secondary" className="text-sm px-4 py-2">
-                <Award className="w-4 h-4 mr-2" />
-                Premium Quality
+              <Badge tone="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
+                <MapPin className="h-3.5 w-3.5" aria-hidden />
+                On-property offerings
               </Badge>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Filters and Controls */}
-      <section className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            {/* Category Filter */}
-            <div className="flex flex-wrap gap-2">
-              {categories.map(category => (
-                <Button
-                  variant={selectedCategory === category ? "primary" : "outline"}
-                  onClick={() => setSelectedCategory(category)}
-                  className="text-sm px-3 py-1.5"
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-
-            {/* Sort and View Controls */}
-            <div className="flex items-center gap-4">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+      <section className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <div className="flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? "primary" : "outline"}
+                onClick={() => setSelectedCategory(category)}
+                className="!rounded-full !px-3 !py-1.5 !text-xs"
               >
-                {sortOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-              
-              <div className="flex gap-2">
-                <Button
-                  variant={viewMode === "grid" ? "primary" : "ghost"}
-                  onClick={() => setViewMode("grid")}
-                  className="p-2"
-                >
-                  <Grid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "primary" : "ghost"}
-                  onClick={() => setViewMode("list")}
-                  className="p-2"
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
+                {category}
+              </Button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => void load()}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} aria-hidden />
+              Refresh
+            </button>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="rounded-full border border-border bg-white px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/25"
+            >
+              <option value="Featured">Featured</option>
+              <option value="Price: Low to High">Price: Low to High</option>
+              <option value="Price: High to Low">Price: High to Low</option>
+              <option value="Name">Name</option>
+            </select>
+            <div className="flex gap-1 rounded-full border border-border p-0.5">
+              <Button
+                variant={viewMode === "grid" ? "primary" : "ghost"}
+                onClick={() => setViewMode("grid")}
+                className="!p-2"
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "primary" : "ghost"}
+                onClick={() => setViewMode("list")}
+                className="!p-2"
+              >
+                <List className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services Grid */}
-      <section className="container mx-auto px-4 py-12">
-        <div className={`grid gap-6 ${
-          viewMode === "grid" 
-            ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" 
-            : "grid-cols-1"
-        }`}>
-          {sortedServices.map((service, index) => (
-            <motion.div
-              key={service.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card hover className="h-full overflow-hidden group">
-                {/* Image Section */}
-                <div className="relative h-48 overflow-hidden">
-                  <Image
-                    src={service.image}
-                    alt={service.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  
-                  {/* Badges */}
-                  <div className="absolute top-3 left-3 flex gap-2">
-                    {service.aiConfirmed && (
-                      <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full inline-flex items-center">
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        AI Optimized
-                      </span>
-                    )}
-                    {service.trending && (
-                      <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full inline-flex items-center">
-                        <TrendingUp className="w-3 h-3 mr-1" />
-                        Trending
-                      </span>
-                    )}
-                    {service.popular && (
-                      <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full inline-flex items-center">
-                        <Star className="w-3 h-3 mr-1" />
-                        Popular
-                      </span>
-                    )}
-                  </div>
+      <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        {loading && services.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted">
+            <Loader2 className="h-8 w-8 animate-spin text-accent" aria-hidden />
+            <p className="text-sm">Loading services…</p>
+          </div>
+        ) : null}
+        {error ? (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            {error} Start the API on port 4000 and run{" "}
+            <code className="rounded bg-white px-1">npm run db:seed</code> in{" "}
+            <code className="rounded bg-white px-1">kuriftu-ai/backend</code>.
+          </div>
+        ) : null}
 
-                  {/* Actions */}
-                  <div className="absolute top-3 right-3 flex gap-2">
-                    <Button
-                      variant="ghost"
-                      onClick={() => toggleFavorite(service.id)}
-                      className="bg-white/90 backdrop-blur-sm hover:bg-white p-2"
-                    >
-                      <Heart 
-                        className={`w-4 h-4 ${favorites.includes(service.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
-                      />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="bg-white/90 backdrop-blur-sm hover:bg-white p-2"
-                    >
-                      <Share2 className="w-4 h-4 text-gray-600" />
-                    </Button>
-                  </div>
-
-                  {/* Discount Badge */}
-                  {service.discount > 0 && (
-                    <div className="absolute bottom-3 left-3">
-                      <Badge className="bg-red-500 text-white text-sm px-3 py-1">
-                        {service.discount}% OFF
+        <div
+          className={`grid gap-6 ${
+            viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+          }`}
+        >
+          {sortedServices.map((service, index) => {
+            const img = service.imageUrl ?? resortImages.spa;
+            const showStrike = service.basePrice > service.publishedPrice + 0.01;
+            return (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: index * 0.03 }}
+              >
+                <Card hover className="h-full overflow-hidden border-border">
+                  <div className="relative h-48 w-full overflow-hidden">
+                    <SafeImage
+                      src={img}
+                      alt={service.title}
+                      fill
+                      sizes="(max-width:768px) 100vw, 33vw"
+                      className="object-cover transition duration-500 hover:scale-[1.03]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute left-3 top-3">
+                      <Badge tone="secondary" className="text-[10px] uppercase tracking-wide">
+                        {categoryLabel(service.category)}
                       </Badge>
                     </div>
-                  )}
-                </div>
-
-                {/* Content Section */}
-                <div className="p-6">
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="text-xl font-semibold text-foreground mb-1">
-                        {service.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">{service.category}</p>
+                    <div className="absolute right-3 top-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleFavorite(service.id)}
+                        className="rounded-full bg-white/90 p-2 shadow-sm backdrop-blur"
+                        aria-label={favorites.includes(service.id) ? "Remove favorite" : "Add favorite"}
+                      >
+                        <Heart
+                          className={`h-4 w-4 ${
+                            favorites.includes(service.id) ? "fill-red-500 text-red-500" : "text-muted"
+                          }`}
+                        />
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full bg-white/90 p-2 shadow-sm backdrop-blur"
+                        aria-label="Share"
+                      >
+                        <Share2 className="h-4 w-4 text-muted" />
+                      </button>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1 mb-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{service.rating}</span>
-                        <span className="text-xs text-muted-foreground">({service.reviews})</span>
+                  </div>
+                  <div className="space-y-3 p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-display text-lg font-semibold text-foreground">{service.title}</h3>
+                        <p className="mt-1 line-clamp-2 text-sm text-muted">{service.description}</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-0.5 text-amber-600">
+                        <Star className="h-4 w-4 fill-current" aria-hidden />
+                        <span className="text-sm font-semibold">4.8</span>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-muted-foreground mb-4 line-clamp-2">
-                    {service.description}
-                  </p>
-
-                  {/* Meta Info */}
-                  <div className="flex gap-4 mb-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{service.duration}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      <span>{service.capacity}</span>
-                    </div>
-                  </div>
-
-                  {/* Features */}
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-1">
-                      {service.features.slice(0, 3).map((feature, idx) => (
-                        <Badge key={idx} tone="secondary" className="text-xs">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          {feature}
-                        </Badge>
-                      ))}
-                      {service.features.length > 3 && (
-                        <Badge className="text-xs border border-border">
-                          +{service.features.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Price Section */}
-                  <div className="flex items-center justify-between pt-4 border-t border-border">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        {service.aiOptimizedPrice < service.basePrice && (
-                          <span className="text-sm text-muted-foreground line-through">
-                            ${service.basePrice}
-                          </span>
-                        )}
-                        <span className="text-2xl font-bold text-primary">
-                          ${service.aiOptimizedPrice}
-                        </span>
-                      </div>
-                      {service.aiConfirmed && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <Sparkles className="w-3 h-3 text-green-500" />
-                          <span className="text-xs text-green-600">
-                            AI-optimized price
+                    {service.hours ? (
+                      <p className="flex items-center gap-1.5 text-xs text-muted">
+                        <Clock className="h-3.5 w-3.5" aria-hidden />
+                        {service.hours}
+                      </p>
+                    ) : null}
+                    <div className="flex items-end justify-between border-t border-border pt-4">
+                      <div>
+                        <div className="flex items-baseline gap-2">
+                          {showStrike ? (
+                            <span className="text-sm text-muted line-through">
+                              ${service.basePrice.toFixed(0)}
+                            </span>
+                          ) : null}
+                          <span className="font-display text-2xl font-semibold text-foreground">
+                            ${service.publishedPrice.toFixed(0)}
                           </span>
                         </div>
-                      )}
+                        <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-secondary">
+                          <Sparkles className="h-3 w-3" aria-hidden />
+                          Current guest rate
+                        </p>
+                      </div>
+                      <Button
+                        variant="primary"
+                        className="!rounded-full !px-4 !py-2 !text-xs"
+                        onClick={() => {
+                          setSelectedService(buildModalService(service));
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        Details
+                      </Button>
                     </div>
-                    <Button onClick={() => openServiceDetail(service)}>
-                      Book Now
-                    </Button>
                   </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
-      {/* AI Pricing Info Section */}
-      <section className="bg-primary/5 py-16">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center max-w-3xl mx-auto"
-          >
-            <div className="flex justify-center mb-6">
-              <div className="p-3 bg-primary/20 rounded-full">
-                <Info className="w-8 h-8 text-primary" />
-              </div>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              AI-Powered Dynamic Pricing
-            </h2>
-            <p className="text-muted-foreground mb-8">
-              Our intelligent pricing system analyzes demand, seasonality, and market trends to provide you with the best possible rates. 
-              Prices marked with "AI Optimized" have been carefully calculated to ensure optimal value for both quality and cost.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
-                </div>
-                <h3 className="font-semibold mb-2">Market Analysis</h3>
-                <p className="text-sm text-muted-foreground">
-                  Real-time market data and competitor pricing analysis
-                </p>
-              </Card>
-              <Card className="text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-6 h-6 text-green-600" />
-                </div>
-                <h3 className="font-semibold mb-2">Best Price Guarantee</h3>
-                <p className="text-sm text-muted-foreground">
-                  Ensuring you get the best value for your money
-                </p>
-              </Card>
-              <Card className="text-center">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Zap className="w-6 h-6 text-purple-600" />
-                </div>
-                <h3 className="font-semibold mb-2">Instant Updates</h3>
-                <p className="text-sm text-muted-foreground">
-                  Prices update in real-time based on availability and demand
-                </p>
-              </Card>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Service Detail Modal */}
       <ServiceDetailModal
         service={selectedService}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onBook={handleBook}
+        onBook={() => setIsModalOpen(false)}
       />
     </div>
   );

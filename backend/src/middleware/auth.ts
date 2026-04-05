@@ -5,6 +5,7 @@ import { prisma } from "../lib/prisma.js";
 export type AuthedRequest = Request & {
   userId?: string;
   isAdmin?: boolean;
+  role?: string;
 };
 
 export function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
@@ -18,6 +19,7 @@ export function requireAuth(req: AuthedRequest, res: Response, next: NextFunctio
     const p = verifyToken(token);
     req.userId = p.sub;
     req.isAdmin = p.admin;
+    req.role = p.role;
     next();
   } catch {
     res.status(401).json({ error: "Invalid or expired token" });
@@ -45,9 +47,32 @@ export async function attachAdminFromDb(req: AuthedRequest, res: Response, next:
   try {
     const u = await prisma.user.findUnique({
       where: { id: req.userId },
-      select: { isAdmin: true },
+      select: { isAdmin: true, role: true },
     });
-    req.isAdmin = Boolean(u?.isAdmin);
+    req.isAdmin = Boolean(u?.isAdmin) || u?.role === "ADMIN";
+    if (u?.role) req.role = u.role;
+    next();
+  } catch {
+    res.status(500).json({ error: "Server error" });
+  }
+}
+
+/** MANAGER or ADMIN — IntelliRate & service optimizer. Role is verified from DB. */
+export async function requireStaff(req: AuthedRequest, res: Response, next: NextFunction) {
+  if (!req.userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  try {
+    const u = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { role: true },
+    });
+    if (!u || (u.role !== "MANAGER" && u.role !== "ADMIN")) {
+      res.status(403).json({ error: "Manager or admin access required" });
+      return;
+    }
+    req.role = u.role;
     next();
   } catch {
     res.status(500).json({ error: "Server error" });

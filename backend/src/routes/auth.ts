@@ -33,10 +33,17 @@ authRouter.post(
     const passwordHash = await hashPassword(password);
     const user = await prisma.user.create({
       data: { email, passwordHash },
-      select: { id: true, email: true, isAdmin: true },
+      select: { id: true, email: true, isAdmin: true, role: true },
     });
-    const token = signToken({ sub: user.id, admin: user.isAdmin });
-    res.status(201).json({ user, token });
+    const token = signToken({
+      sub: user.id,
+      admin: user.role === "ADMIN" || user.isAdmin,
+      role: user.role,
+    });
+    res.status(201).json({
+      user: { id: user.id, email: user.email, isAdmin: user.isAdmin, role: user.role },
+      token,
+    });
   })
 );
 
@@ -49,14 +56,32 @@ authRouter.post(
       return;
     }
     const { email, password } = parsed.data;
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        passwordHash: true,
+        isAdmin: true,
+        role: true,
+      },
+    });
     if (!user || !(await verifyPassword(password, user.passwordHash))) {
       res.status(401).json({ error: "Invalid email or password" });
       return;
     }
-    const token = signToken({ sub: user.id, admin: user.isAdmin });
+    const token = signToken({
+      sub: user.id,
+      admin: user.role === "ADMIN" || user.isAdmin,
+      role: user.role,
+    });
     res.json({
-      user: { id: user.id, email: user.email, isAdmin: user.isAdmin },
+      user: {
+        id: user.id,
+        email: user.email,
+        isAdmin: user.role === "ADMIN" || user.isAdmin,
+        role: user.role,
+      },
       token,
     });
   })

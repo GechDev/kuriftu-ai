@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 
 interface Service {
-  id: number;
+  id: string | number;
   name: string;
   category: string;
   basePrice: number;

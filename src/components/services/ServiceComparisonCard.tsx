@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/SafeImage";
 import {
   TrendingUp,
   TrendingDown,
@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/Badge";
 
 interface ServiceComparisonCardProps {
   service: {
-    id: number;
+    id: string;
     name: string;
     category: string;
     basePrice: number;
@@ -36,7 +36,7 @@ interface ServiceComparisonCardProps {
     insight: string;
     image?: string;
   };
-  onConfirmAiPrice: (serviceId: number, newPrice: number) => void;
+  onConfirmAiPrice: (serviceId: string) => Promise<void>;
   isConfirmed?: boolean;
 }
 
@@ -52,21 +52,13 @@ export function ServiceComparisonCard({
   const priceChangePercent = ((priceDifference / service.publishedPrice) * 100).toFixed(1);
   const isPriceIncrease = priceDifference > 0;
 
-  // Debug logging
-  console.log('ServiceComparisonCard - service:', {
-    name: service.name,
-    publishedPrice: service.publishedPrice,
-    aiSuggestedPrice: service.aiSuggestedPrice,
-    priceDifference,
-    priceChangePercent
-  });
-
   const handleConfirmPrice = async () => {
     setIsConfirming(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    onConfirmAiPrice(service.id, service.aiSuggestedPrice);
-    setIsConfirming(false);
+    try {
+      await onConfirmAiPrice(service.id);
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
   const getDemandColor = (level: string) => {
@@ -97,11 +89,12 @@ export function ServiceComparisonCard({
         {/* Header */}
         <div className="relative h-32 overflow-hidden">
           {service.image && (
-            <Image
-              src={service.image}
+            <SafeImage
+              src={typeof service.image === "string" ? service.image : "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80"}
               alt={service.name}
               fill
               className="object-cover"
+              sizes="(max-width:768px) 100vw, 400px"
             />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

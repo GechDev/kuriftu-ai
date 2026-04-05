@@ -125,7 +125,7 @@ export function VoiceConcierge() {
               audio
               video={false}
               onDisconnected={() => disconnect()}
-              onError={(err) => setError(err.message)}
+              onError={(err: Error) => setError(err.message)}
               className="flex flex-col gap-6"
             >
               {roomName ? (

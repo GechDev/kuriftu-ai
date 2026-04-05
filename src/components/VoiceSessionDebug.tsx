@@ -38,7 +38,7 @@ export function VoiceSessionDebug() {
     if (!guestIdentity) return [];
     const behalf = ParticipantAgentAttributes.PublishOnBehalf;
     return allStreams.filter(
-      (s) =>
+      (s: (typeof allStreams)[number]) =>
         s.participantInfo.identity === guestIdentity ||
         s.streamInfo.attributes?.[behalf] === guestIdentity,
     );
@@ -48,7 +48,7 @@ export function VoiceSessionDebug() {
   const agentStreams = useMemo(() => {
     if (!agent?.identity) return [];
     const behalf = ParticipantAgentAttributes.PublishOnBehalf;
-    return allStreams.filter((s) => {
+    return allStreams.filter((s: (typeof allStreams)[number]) => {
       if (s.participantInfo.identity !== agent.identity) return false;
       return s.streamInfo.attributes?.[behalf] !== guestIdentity;
     });
@@ -57,7 +57,7 @@ export function VoiceSessionDebug() {
   const userStreamText = useMemo(
     () =>
       userStreams
-        .map((s) => s.text.trim())
+        .map((s: (typeof userStreams)[number]) => s.text.trim())
         .filter(Boolean)
         .join("\n---\n"),
     [userStreams],
@@ -66,14 +66,17 @@ export function VoiceSessionDebug() {
   const agentStreamText = useMemo(
     () =>
       agentStreams
-        .map((s) => s.text.trim())
+        .map((s: (typeof agentStreams)[number]) => s.text.trim())
         .filter(Boolean)
         .join("\n---\n"),
     [agentStreams],
   );
 
   const trackTranscriptionText = useMemo(
-    () => agentTranscriptions.map((s) => s.text).join(""),
+    () =>
+      agentTranscriptions
+        .map((s: (typeof agentTranscriptions)[number]) => s.text)
+        .join(""),
     [agentTranscriptions],
   );
 
@@ -227,7 +230,7 @@ export function VoiceSessionDebug() {
           All transcription streams ({allStreams.length})
         </summary>
         <ul className="mt-2 max-h-40 space-y-2 overflow-auto text-[11px] text-muted">
-          {allStreams.map((s, i) => {
+          {allStreams.map((s: (typeof allStreams)[number], i: number) => {
             const behalf =
               s.streamInfo.attributes?.[
                 ParticipantAgentAttributes.PublishOnBehalf

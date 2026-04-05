@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
+import { isStaff } from "@/lib/staff";
 import {
   IconBell,
   IconBookings,
@@ -19,8 +20,7 @@ import { Button, LinkButton } from "./ui";
 const mainNav = [
   { href: "/rooms", label: "Rooms & suites", Icon: IconRooms },
   { href: "/resorts", label: "Our resorts", Icon: IconResort },
-  { href: "/intellirate", label: "IntelliRate", Icon: IconSpark },
-  { href: "/services", label: "AI Optimizer", Icon: IconShield },
+  { href: "/admin", label: "Control Center", Icon: IconSpark, staff: true },
   { href: "/pricing", label: "Premium Pricing", Icon: IconBookings },
   { href: "/bookings", label: "Reservations", Icon: IconBookings },
   { href: "/requests", label: "Guest services", Icon: IconRequests },
@@ -79,9 +79,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   Voice
                 </span>
               </LinkButton>
-              {mainNav.map(({ href, label, Icon }) => {
+              {mainNav
+                .filter((item) => (item.staff ? isStaff(user) : true))
+                .map(({ href, label, Icon }) => {
                 const active =
-                  pathname === href || pathname.startsWith(href + "/");
+                  href === "/admin"
+                    ? pathname.startsWith("/admin")
+                    : pathname === href || pathname.startsWith(href + "/");
                 return (
                   <Link
                     key={href}
@@ -99,16 +103,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               })}
               {user?.isAdmin ? (
                 <Link
-                  href="/admin"
+                  href="/admin/operations"
                   className={`ml-2 border-l border-border pl-4 text-xs font-medium uppercase tracking-[0.12em] ${
-                    pathname.startsWith("/admin")
+                    pathname.startsWith("/admin/operations")
                       ? "text-[color:var(--gold)]"
                       : "text-muted hover:text-foreground"
                   }`}
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <IconShield className="h-3.5 w-3.5" />
-                    Staff
+                    Ops
                   </span>
                 </Link>
               ) : null}
@@ -157,25 +161,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               Voice
             </Link>
-            {mainNav.map(({ href, label }) => (
+            {mainNav
+              .filter((item) => (item.staff ? isStaff(user) : true))
+              .map(({ href, label }) => {
+                const navActive =
+                  href === "/admin"
+                    ? pathname.startsWith("/admin")
+                    : pathname === href || pathname.startsWith(href + "/");
+                return (
               <Link
                 key={href}
                 href={href}
                 className={`shrink-0 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide ${
-                  pathname === href || pathname.startsWith(href + "/")
-                    ? "text-accent"
-                    : "text-muted"
+                  navActive ? "text-accent" : "text-muted"
                 }`}
               >
                 {label}
               </Link>
-            ))}
+            );
+            })}
             {user?.isAdmin ? (
               <Link
-                href="/admin"
-                className="shrink-0 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-[color:var(--gold)]"
+                href="/admin/operations"
+                className={`shrink-0 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide ${
+                  pathname.startsWith("/admin/operations")
+                    ? "text-[color:var(--gold)]"
+                    : "text-muted"
+                }`}
               >
-                Staff
+                Ops
               </Link>
             ) : null}
           </nav>

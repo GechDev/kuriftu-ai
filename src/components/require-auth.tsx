@@ -2,6 +2,7 @@
 
 import { IconMark } from "@/components/icons";
 import { useAuth } from "@/contexts/auth-context";
+import { isStaff } from "@/lib/staff";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { EmptyState, LinkButton, Spinner } from "./ui";
@@ -9,9 +10,12 @@ import { EmptyState, LinkButton, Spinner } from "./ui";
 export function RequireAuth({
   children,
   adminOnly,
+  staffOnly,
 }: {
   children: React.ReactNode;
   adminOnly?: boolean;
+  /** Manager or admin — IntelliRate & service optimizer */
+  staffOnly?: boolean;
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -19,8 +23,7 @@ export function RequireAuth({
   useEffect(() => {
     if (loading) return;
     if (!user) router.replace("/login");
-    else if (adminOnly && !user.isAdmin) router.replace("/");
-  }, [user, loading, adminOnly, router]);
+  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -55,6 +58,22 @@ export function RequireAuth({
         <EmptyState
           title="Admin access only"
           description="This area is restricted to staff accounts."
+        />
+      </div>
+    );
+  }
+
+  if (staffOnly && !isStaff(user)) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-20 sm:px-6">
+        <EmptyState
+          title="Manager access required"
+          description="IntelliRate and the service optimizer are available to resort managers and administrators. Sign in with a staff account."
+          action={
+            <LinkButton href="/login" className="min-w-[140px]">
+              Staff sign in
+            </LinkButton>
+          }
         />
       </div>
     );
