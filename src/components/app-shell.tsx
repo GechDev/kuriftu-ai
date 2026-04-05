@@ -161,35 +161,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               Voice
             </Link>
-            {mainNav
-              .filter((item) => (item.staff ? isStaff(user) : true))
-              .map(({ href, label }) => {
-                const navActive =
-                  href === "/admin"
-                    ? pathname.startsWith("/admin")
-                    : pathname === href || pathname.startsWith(href + "/");
-                return (
+            {mainNav.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 className={`shrink-0 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide ${
-                  navActive ? "text-accent" : "text-muted"
+                  pathname === href || pathname.startsWith(href + "/")
+                    ? "text-accent"
+                    : "text-muted"
                 }`}
               >
                 {label}
               </Link>
-            );
-            })}
+            ))}
             {user?.isAdmin ? (
               <Link
-                href="/admin/operations"
-                className={`shrink-0 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide ${
-                  pathname.startsWith("/admin/operations")
-                    ? "text-[color:var(--gold)]"
-                    : "text-muted"
-                }`}
+                href="/admin"
+                className="shrink-0 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-[color:var(--gold)]"
               >
-                Ops
+                Staff
               </Link>
             ) : null}
           </nav>

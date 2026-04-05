@@ -117,85 +117,107 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-secondary/5">
-      <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/[0.07] via-white to-secondary/10">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+    <div className="min-h-screen bg-white">
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.02] via-white to-primary/[0.03]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--accent)_0%,_transparent_50%)] opacity-20" />
+        
+        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="text-center"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">
-              {resortName}
-            </p>
-            <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
-              Resort services & experiences
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 mb-6 text-[10px] font-medium text-accent backdrop-blur-sm">
+              <Sparkles className="h-3 w-3" />
+              Premium Experiences
+            </div>
+            
+            <h1 className="font-display text-5xl font-light tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+              Resort Services
+              <span className="block text-2xl font-light text-muted sm:text-3xl lg:text-4xl">
+                & Experiences
+              </span>
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-              Live pricing from our reservation system. Rates reflect staff-confirmed published prices
-             —including updates after AI review in the service optimizer.
+            
+            <p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-muted/90 sm:text-xl">
+              Discover our curated collection of luxury experiences, from signature spa treatments 
+              to exclusive dining. Each service is thoughtfully designed and priced 
+              using our intelligent optimization system.
             </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-              <Badge tone="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
-                <Sparkles className="h-3.5 w-3.5" aria-hidden />
-                Database-backed rates
-              </Badge>
-              <Badge tone="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
-                <MapPin className="h-3.5 w-3.5" aria-hidden />
-                On-property offerings
-              </Badge>
+            
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <div className="flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-sm text-muted backdrop-blur-sm border border-border/20 shadow-sm">
+                <div className="h-2 w-2 rounded-full bg-green-500" />
+                Live pricing
+              </div>
+              <div className="flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-sm text-muted backdrop-blur-sm border border-border/20 shadow-sm">
+                <MapPin className="h-3.5 w-3.5" />
+                On-property
+              </div>
+              <div className="flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-sm text-muted backdrop-blur-sm border border-border/20 shadow-sm">
+                <Star className="h-3.5 w-3.5" />
+                AI optimized
+              </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      <section className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <section className="sticky top-0 z-40 border-b border-border/10 bg-white/95 backdrop-blur-xl shadow-sm">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-2">
             {categories.map((category) => (
               <Button
                 key={category}
-                variant={selectedCategory === category ? "primary" : "outline"}
+                variant={selectedCategory === category ? "primary" : "ghost"}
                 onClick={() => setSelectedCategory(category)}
-                className="!rounded-full !px-3 !py-1.5 !text-xs"
+                className={`!rounded-full !px-4 !py-2 !text-xs font-medium transition-all duration-200 ${
+                  selectedCategory === category 
+                    ? "shadow-lg shadow-accent/25 ring-2 ring-accent/20" 
+                    : "hover:bg-accent/5 border border-border/20"
+                }`}
               >
                 {category}
               </Button>
             ))}
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => void load()}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-full bg-white border border-border/20 px-4 py-2 text-xs font-medium text-foreground hover:bg-accent/5 hover:border-accent/30 disabled:opacity-50 transition-all duration-200 shadow-sm"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} aria-hidden />
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </button>
+            
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="rounded-full border border-border bg-white px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/25"
+              className="rounded-full border border-border/20 bg-white/80 px-4 py-2 text-xs font-medium text-foreground backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent/40 transition-all duration-200"
             >
               <option value="Featured">Featured</option>
               <option value="Price: Low to High">Price: Low to High</option>
               <option value="Price: High to Low">Price: High to Low</option>
               <option value="Name">Name</option>
             </select>
-            <div className="flex gap-1 rounded-full border border-border p-0.5">
+            
+            <div className="flex items-center rounded-full bg-white/80 border border-border/20 p-0.5 backdrop-blur-sm">
               <Button
                 variant={viewMode === "grid" ? "primary" : "ghost"}
                 onClick={() => setViewMode("grid")}
-                className="!p-2"
+                className="!p-2 !rounded-full"
               >
                 <Grid className="h-4 w-4" />
               </Button>
               <Button
                 variant={viewMode === "list" ? "primary" : "ghost"}
                 onClick={() => setViewMode("list")}
-                className="!p-2"
+                className="!p-2 !rounded-full"
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -220,8 +242,8 @@ export default function PricingPage() {
         ) : null}
 
         <div
-          className={`grid gap-6 ${
-            viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+          className={`grid gap-8 ${
+            viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
           }`}
         >
           {sortedServices.map((service, index) => {
@@ -230,90 +252,106 @@ export default function PricingPage() {
             return (
               <motion.div
                 key={service.id}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: index * 0.03 }}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
+                whileHover={{ y: -4 }}
+                className="group"
               >
-                <Card hover className="h-full overflow-hidden border-border">
-                  <div className="relative h-48 w-full overflow-hidden">
+                <Card className="h-full overflow-hidden border-0 bg-white shadow-lg shadow-black/[0.04] hover:shadow-2xl hover:shadow-black/[0.08] transition-all duration-300">
+                  <div className="relative h-56 w-full overflow-hidden">
                     <SafeImage
                       src={img}
                       alt={service.title}
                       fill
                       sizes="(max-width:768px) 100vw, 33vw"
-                      className="object-cover transition duration-500 hover:scale-[1.03]"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute left-3 top-3">
-                      <Badge tone="secondary" className="text-[10px] uppercase tracking-wide">
-                        {categoryLabel(service.category)}
-                      </Badge>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    <div className="absolute left-4 top-4">
+                      <div className="rounded-full bg-white/95 px-3 py-1.5 backdrop-blur-sm border border-white/20 shadow-lg">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-foreground">
+                          {categoryLabel(service.category)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="absolute right-3 top-3 flex gap-2">
+                    
+                    <div className="absolute right-4 top-4 flex gap-2">
                       <button
                         type="button"
                         onClick={() => toggleFavorite(service.id)}
-                        className="rounded-full bg-white/90 p-2 shadow-sm backdrop-blur"
+                        className="rounded-full bg-white/95 p-2.5 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white"
                         aria-label={favorites.includes(service.id) ? "Remove favorite" : "Add favorite"}
                       >
                         <Heart
-                          className={`h-4 w-4 ${
-                            favorites.includes(service.id) ? "fill-red-500 text-red-500" : "text-muted"
+                          className={`h-4 w-4 transition-colors duration-200 ${
+                            favorites.includes(service.id) ? "fill-red-500 text-red-500" : "text-muted/70"
                           }`}
                         />
                       </button>
                       <button
                         type="button"
-                        className="rounded-full bg-white/90 p-2 shadow-sm backdrop-blur"
+                        className="rounded-full bg-white/95 p-2.5 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white"
                         aria-label="Share"
                       >
-                        <Share2 className="h-4 w-4 text-muted" />
+                        <Share2 className="h-4 w-4 text-muted/70" />
                       </button>
                     </div>
                   </div>
-                  <div className="space-y-3 p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="font-display text-lg font-semibold text-foreground">{service.title}</h3>
-                        <p className="mt-1 line-clamp-2 text-sm text-muted">{service.description}</p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-0.5 text-amber-600">
-                        <Star className="h-4 w-4 fill-current" aria-hidden />
-                        <span className="text-sm font-semibold">4.8</span>
-                      </div>
-                    </div>
-                    {service.hours ? (
-                      <p className="flex items-center gap-1.5 text-xs text-muted">
-                        <Clock className="h-3.5 w-3.5" aria-hidden />
-                        {service.hours}
-                      </p>
-                    ) : null}
-                    <div className="flex items-end justify-between border-t border-border pt-4">
-                      <div>
-                        <div className="flex items-baseline gap-2">
-                          {showStrike ? (
-                            <span className="text-sm text-muted line-through">
-                              ${service.basePrice.toFixed(0)}
-                            </span>
-                          ) : null}
-                          <span className="font-display text-2xl font-semibold text-foreground">
-                            ${service.publishedPrice.toFixed(0)}
-                          </span>
-                        </div>
-                        <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-secondary">
-                          <Sparkles className="h-3 w-3" aria-hidden />
-                          Current guest rate
+                  
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h3 className="font-display text-xl font-light tracking-tight text-foreground line-clamp-1">
+                          {service.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-relaxed text-muted/80 line-clamp-2">
+                          {service.description}
                         </p>
                       </div>
+                      <div className="flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1.5 border border-amber-100">
+                        <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+                        <span className="text-sm font-semibold text-amber-700">4.8</span>
+                      </div>
+                    </div>
+                    
+                    {service.hours && (
+                      <div className="flex items-center gap-2 text-sm text-muted/70">
+                        <Clock className="h-4 w-4" />
+                        <span>{service.hours}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-end justify-between pt-4 border-t border-border/10">
+                      <div className="flex-1">
+                        <div className="flex items-baseline gap-3">
+                          {showStrike && (
+                            <span className="text-sm text-muted/60 line-through">
+                              ${service.basePrice.toFixed(0)}
+                            </span>
+                          )}
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-[10px] font-medium uppercase tracking-wide text-muted/70">$</span>
+                            <span className="font-display text-3xl font-light text-foreground">
+                              {service.publishedPrice.toFixed(0)}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-accent">
+                          <Sparkles className="h-3 w-3" />
+                          AI optimized rate
+                        </p>
+                      </div>
+                      
                       <Button
-                        variant="primary"
-                        className="!rounded-full !px-4 !py-2 !text-xs"
                         onClick={() => {
                           setSelectedService(buildModalService(service));
                           setIsModalOpen(true);
                         }}
+                        className="rounded-xl bg-gradient-to-r from-accent to-accent/90 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-accent/25 hover:from-accent/95 hover:shadow-accent/35 transition-all duration-200"
                       >
-                        Details
+                        View Details
                       </Button>
                     </div>
                   </div>
