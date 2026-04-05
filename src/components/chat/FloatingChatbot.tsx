@@ -39,7 +39,7 @@ export function FloatingChatbot() {
           type="button"
           aria-label="Open AI assistant"
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-[var(--shadow-glow)] transition hover:scale-105 md:bottom-8 md:right-8"
+          className="fixed bottom-6 right-6 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[var(--shadow-soft)] transition hover:scale-105 md:bottom-8 md:right-8"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}
         >
@@ -81,8 +81,8 @@ export function FloatingChatbot() {
                   <div
                     className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
                       msg.role === "user"
-                        ? "bg-accent text-white"
-                        : "bg-slate-100 text-primary"
+                        ? "bg-primary text-white"
+                        : "bg-background text-primary"
                     }`}
                   >
                     {msg.text}
@@ -96,7 +96,7 @@ export function FloatingChatbot() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && send()}
                 placeholder="Ask NEXORA…"
-                className="min-w-0 flex-1 rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none ring-accent/30 focus:ring-2"
+                className="min-w-0 flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none ring-primary/20 focus:ring-2"
               />
               <button
                 type="button"

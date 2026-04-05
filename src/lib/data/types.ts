@@ -51,3 +51,22 @@ export interface AiExplanation {
   text: string;
   confidence: number;
 }
+
+/** Live payload from Kuriftu Python pricing engine (GET /api/kuriftu/service-pricing) */
+export interface KuriftuServicePricingRow {
+  id: string;
+  numericId: number;
+  name: string;
+  category: string;
+  basePrice: number;
+  publishedPrice: number;
+  aiSuggestedPrice: number;
+  demandLevel: "Low" | "Medium" | "High" | "Surge";
+  demandIndex: number;
+  changePctPublishedVsBase: number;
+  changePctSuggestedVsPublished: number;
+  status: "Optimal" | "Underpriced" | "Overpriced";
+  insight: string;
+  confidence: number;
+  competitorAvg: number;
+}

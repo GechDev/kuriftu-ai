@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import {
   BarChart3,
   Brain,
@@ -11,6 +12,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { benefits, features, steps, testimonials } from "@/lib/data/landing";
+import { resortGalleryKeys, resortImages } from "@/lib/resortImages";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -24,161 +26,274 @@ const iconMap = {
 } as const;
 
 const fadeUp = {
-  initial: { opacity: 0, y: 24 },
+  initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-80px" },
-  transition: { duration: 0.5 },
+  viewport: { once: true, margin: "-60px" },
+  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
 };
+
+function FeatureBentoCard({
+  f,
+  index,
+}: {
+  f: (typeof features)[number];
+  index: number;
+}) {
+  const Icon = iconMap[f.icon];
+  const spans =
+    index === 0
+      ? "lg:col-span-2 lg:row-span-2 min-h-[22rem]"
+      : index === 3
+        ? "lg:col-span-2 min-h-[16rem]"
+        : "min-h-[14rem]";
+
+  return (
+    <motion.div
+      {...fadeUp}
+      transition={{ ...fadeUp.transition, delay: index * 0.06 }}
+      className={spans}
+    >
+      <div className="group relative h-full min-h-0 overflow-hidden rounded-[1.35rem] border border-border bg-card shadow-[var(--shadow-soft)]">
+        <Image
+          src={resortImages[f.image]}
+          alt=""
+          fill
+          className="object-cover transition-[transform,filter] duration-[1.2s] ease-out group-hover:scale-[1.03] group-hover:brightness-[1.03]"
+          sizes={
+            index === 0
+              ? "(max-width:1024px) 100vw, 66vw"
+              : index === 3
+                ? "(max-width:1024px) 100vw, 66vw"
+                : "(max-width:1024px) 100vw, 33vw"
+          }
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-[#0d1412]/88 via-[#0d1412]/35 to-[#0d1412]/10"
+          aria-hidden
+        />
+        <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-7">
+          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/12 text-white backdrop-blur-md ring-1 ring-white/20">
+            <Icon className="h-5 w-5" aria-hidden />
+          </div>
+          <h3 className="text-lg font-semibold tracking-tight text-white sm:text-xl">{f.title}</h3>
+          <p className="mt-2 max-w-prose text-sm leading-relaxed text-white/78">{f.description}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 export function LandingView() {
   return (
-    <main>
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-[#1e3a52] to-[#0f2740]" />
-        <div className="absolute inset-0 opacity-40">
-          <div className="absolute -right-20 top-20 h-96 w-96 rounded-full bg-accent blur-[100px]" />
-          <div className="absolute -left-20 bottom-20 h-80 w-80 rounded-full bg-secondary/40 blur-[90px]" />
-        </div>
-        <div
-          className="absolute inset-0 opacity-[0.15]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
+    <main className="overflow-x-hidden">
+      {/* Hero — full-bleed photography, minimal chrome */}
+      <section className="relative min-h-[min(92vh,52rem)]">
+        <Image
+          src={resortImages.hero}
+          alt="Kuriftu-style resort pool and grounds"
+          fill
+          priority
+          className="object-cover object-center"
+          sizes="100vw"
         />
-        <div className="relative mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-center px-4 pb-20 pt-28 sm:px-6 lg:px-8 lg:pb-28 lg:pt-32">
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-[#0d1412] via-[#0d1412]/45 to-[#0d1412]/25"
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0d1412]/80 via-transparent to-transparent sm:from-[#0d1412]/65" />
+
+        <div className="relative mx-auto flex min-h-[min(92vh,52rem)] max-w-7xl flex-col justify-end px-4 pb-16 pt-28 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24 lg:pt-32">
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
+            className="max-w-2xl"
           >
-            <p className="mb-2 text-sm font-medium text-white/80">Where Hospitality Meets Intelligence.</p>
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-secondary backdrop-blur-md">
-              <Sparkles className="h-3.5 w-3.5" />
-              Kuriftu NEXORA
+            <p className="text-sm font-medium tracking-wide text-white/85">Kuriftu Resort · NEXORA</p>
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 backdrop-blur-md">
+              <Sparkles className="h-3.5 w-3.5 text-white/80" aria-hidden />
+              Hospitality intelligence
             </p>
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Transform Hospitality with AI Intelligence
+            <h1 className="mt-6 text-[2.35rem] font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.25rem]">
+              The calm operating system behind exceptional stays.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg text-white/80">
-              Automate guest journeys, personalize every touchpoint, and optimize revenue with models trained for
-              resort operations — from voice reception to dynamic pricing.
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-white/78 sm:text-lg">
+              Automate guest journeys, personalize every touchpoint, and optimize revenue — tuned for Kuriftu-scale
+              resort operations from Bishoftu to your next property.
             </p>
-            <div className="mt-10 flex flex-wrap gap-4">
-              <Button href="/#cta" variant="secondary">
-                Request Demo
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Button href="/#cta" variant="light" className="px-7">
+                Request a demo
               </Button>
-              <Button href="/#features" variant="ghost">
-                Explore Platform
+              <Button href="/#features" variant="ghost" className="rounded-full px-7">
+                Explore the platform
               </Button>
             </div>
           </motion.div>
+
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.65 }}
-            className="mt-16 grid gap-6 lg:grid-cols-3"
+            transition={{ delay: 0.12, duration: 0.75, ease: [0.22, 1, 0.36, 1] as const }}
+            className="mt-14 grid gap-3 border-t border-white/15 pt-10 sm:grid-cols-3"
           >
             {[
-              { k: "Automate", v: "Voice, SMS, and chat unified" },
-              { k: "Personalize", v: "Guest memory across stays" },
-              { k: "Optimize", v: "IntelliRate + service pricing" },
+              { k: "Automate", v: "Voice, SMS, and chat — one brain" },
+              { k: "Personalize", v: "Memory that follows every guest" },
+              { k: "Optimize", v: "IntelliRate & service pricing" },
             ].map((item) => (
-              <div
-                key={item.k}
-                className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md transition hover:bg-white/10"
-              >
-                <p className="text-sm font-bold text-secondary">{item.k}</p>
-                <p className="mt-1 text-sm text-white/75">{item.v}</p>
+              <div key={item.k} className="border-white/10 sm:border-l sm:border-white/10 sm:pl-6 first:sm:border-l-0 first:sm:pl-0">
+                <p className="text-[13px] font-semibold tracking-wide text-white">{item.k}</p>
+                <p className="mt-1 text-sm text-white/65">{item.v}</p>
               </div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="scroll-mt-20 bg-background py-20 sm:py-28">
+      {/* Filmstrip gallery */}
+      <section className="relative border-y border-border bg-card py-5">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <p className="mb-4 text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-muted">
+            On-property experience
+          </p>
+        </div>
+        <div className="flex gap-3 overflow-x-auto px-4 pb-1 pt-0 [scrollbar-width:none] sm:gap-4 sm:px-6 lg:px-8 [&::-webkit-scrollbar]:hidden">
+          {resortGalleryKeys.map((key) => (
+            <div
+              key={key}
+              className="relative h-36 w-52 shrink-0 overflow-hidden rounded-2xl border border-border/80 shadow-sm sm:h-44 sm:w-64"
+            >
+              <Image
+                src={resortImages[key]}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="(max-width:640px) 208px, 256px"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features — bento with imagery */}
+      <section id="features" className="scroll-mt-24 bg-background py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="Platform"
-            title="Everything your resort needs to run smarter"
-            subtitle="Modular AI that plugs into operations — not another siloed dashboard."
+            title="Everything Kuriftu needs to run smarter"
+            subtitle="Modular AI that lives inside operations — not another siloed dashboard."
           />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f, i) => {
-              const Icon = iconMap[f.icon];
-              return (
-                <motion.div key={f.id} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.06 }}>
-                  <Card hover className="h-full">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                      <Icon className="h-6 w-6" aria-hidden />
-                    </div>
-                    <h3 className="text-lg font-bold text-primary">{f.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted">{f.description}</p>
-                  </Card>
-                </motion.div>
-              );
-            })}
+          <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:grid-cols-3">
+            {features.map((f, i) => (
+              <FeatureBentoCard key={f.id} f={f} index={i} />
+            ))}
           </div>
         </div>
       </section>
 
+      {/* Split narrative + photography */}
+      <section className="border-y border-border bg-card py-20 sm:py-28">
+        <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
+          <motion.div {...fadeUp} className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] border border-border shadow-[var(--shadow-soft)] sm:aspect-[5/6]">
+            <Image
+              src={resortImages.resortGrounds}
+              alt="Resort grounds and pool"
+              fill
+              className="object-cover"
+              sizes="(max-width:1024px) 100vw, 50vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/25 to-transparent" aria-hidden />
+          </motion.div>
+          <motion.div {...fadeUp}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-accent">Why NEXORA</p>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight text-primary sm:text-4xl">
+              Designed for owners, GMs, and front-line teams
+            </h2>
+            <p className="mt-5 text-base leading-relaxed text-muted">
+              The same platform that answers a 2 a.m. spa request also explains why rates moved on Saturday. Fewer
+              tools, clearer stories, faster decisions.
+            </p>
+            <ul className="mt-10 space-y-5">
+              {benefits.map((b) => (
+                <li key={b} className="flex gap-4 text-muted">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                  <span className="text-base leading-relaxed">{b}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+      </section>
+
       {/* How it works */}
-      <section className="border-y border-border bg-white py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden bg-background py-20 sm:py-28">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 lg:block">
+          <Image
+            src={resortImages.hotelFacade}
+            alt=""
+            fill
+            className="object-cover opacity-[0.07]"
+            sizes="50vw"
+          />
+        </div>
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="Flow"
             title="How it works"
             subtitle="From first contact to executive insight — one continuous loop."
           />
-          <div className="grid gap-8 md:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {steps.map((s, idx) => (
-              <motion.div key={s.n} {...fadeUp} transition={{ ...fadeUp.transition, delay: idx * 0.08 }}>
-                <div className="relative rounded-2xl border border-border bg-background p-6 shadow-sm">
-                  <span className="absolute -top-3 left-6 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-white">
-                    Step {s.n}
-                  </span>
-                  <h3 className="mt-4 text-base font-bold text-primary">{s.title}</h3>
-                  <p className="mt-2 text-sm text-muted">{s.body}</p>
-                </div>
+              <motion.div
+                key={s.n}
+                {...fadeUp}
+                transition={{ ...fadeUp.transition, delay: idx * 0.07 }}
+                className="relative rounded-[1.25rem] border border-border bg-card/90 p-6 shadow-[var(--shadow-soft)] backdrop-blur-sm"
+              >
+                <span className="text-[11px] font-semibold tabular-nums text-accent">0{s.n}</span>
+                <h3 className="mt-4 text-base font-semibold text-primary">{s.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{s.body}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Benefits */}
-      <section className="bg-gradient-to-b from-background to-white py-20 sm:py-28">
+      {/* Benefits card + voice */}
+      <section className="bg-card py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <motion.div {...fadeUp}>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Outcomes</p>
-              <h2 className="mt-2 text-3xl font-bold text-primary md:text-4xl">Built for operators and owners</h2>
-              <ul className="mt-8 space-y-4">
-                {benefits.map((b) => (
-                  <li key={b} className="flex gap-3 text-muted">
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-secondary" />
-                    <span className="text-base">{b}</span>
-                  </li>
-                ))}
-              </ul>
+          <div className="grid items-stretch gap-10 lg:grid-cols-2">
+            <motion.div {...fadeUp} className="relative min-h-[20rem] overflow-hidden rounded-[1.5rem] border border-border lg:min-h-[24rem]">
+              <Image
+                src={resortImages.dining}
+                alt="Resort dining"
+                fill
+                className="object-cover"
+                sizes="(max-width:1024px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-primary/10" aria-hidden />
+              <p className="absolute bottom-8 left-8 right-8 text-lg font-medium leading-snug text-white sm:text-xl">
+                Kuriftu guests expect quiet luxury. NEXORA keeps service invisible — and unforgettable.
+              </p>
             </motion.div>
-            <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.1 }}>
-              <Card className="border-accent/20 bg-gradient-to-br from-white to-accent/5">
-                <Mic2 className="h-10 w-10 text-accent" />
-                <p className="mt-4 text-lg font-semibold text-primary">Voice + SMS that sounds like your brand</p>
-                <p className="mt-2 text-sm text-muted">
-                  Policies, inventory, and guest context stay in sync — so AI Receptionist never overpromises.
+            <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.08 }}>
+              <Card className="h-full border-border bg-background/80 p-8 sm:p-10">
+                <Mic2 className="h-9 w-9 text-accent" aria-hidden />
+                <p className="mt-6 text-xl font-semibold leading-snug text-primary sm:text-2xl">
+                  Voice and SMS that sound like your brand
                 </p>
-                <div className="mt-6 flex gap-3">
-                  <div className="flex-1 rounded-xl bg-primary/5 p-4">
-                    <p className="text-2xl font-bold text-primary">−38%</p>
-                    <p className="text-xs text-muted">Routine call volume</p>
+                <p className="mt-4 text-sm leading-relaxed text-muted">
+                  Policies, inventory, and guest context stay synchronized — so AI Receptionist never overpromises.
+                </p>
+                <div className="mt-10 grid grid-cols-2 gap-4">
+                  <div className="rounded-2xl border border-border bg-card p-5">
+                    <p className="text-2xl font-semibold tabular-nums text-primary">−38%</p>
+                    <p className="mt-1 text-xs text-muted">Routine call volume</p>
                   </div>
-                  <div className="flex-1 rounded-xl bg-secondary/20 p-4">
-                    <p className="text-2xl font-bold text-primary">+12%</p>
-                    <p className="text-xs text-muted">RevPAR uplift (avg)</p>
+                  <div className="rounded-2xl border border-border bg-card p-5">
+                    <p className="text-2xl font-semibold tabular-nums text-secondary">+12%</p>
+                    <p className="mt-1 text-xs text-muted">RevPAR uplift (avg)</p>
                   </div>
                 </div>
               </Card>
@@ -188,66 +303,72 @@ export function LandingView() {
       </section>
 
       {/* Demo preview */}
-      <section id="demo" className="scroll-mt-20 py-20 sm:py-28">
+      <section id="demo" className="scroll-mt-24 bg-background py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="Preview"
-            title="See NEXORA in action"
-            subtitle="Executive dashboards and guest-facing AI — same platform, two lenses."
+            title="NEXORA in two lenses"
+            subtitle="Executive clarity and guest-facing polish — same data model, different surfaces."
           />
           <div className="grid gap-8 lg:grid-cols-2">
             <motion.div {...fadeUp}>
-              <p className="mb-3 text-sm font-semibold text-primary">Insights Dashboard</p>
-              <div className="overflow-hidden rounded-2xl border border-border bg-slate-900 shadow-[var(--shadow-soft)]">
-                <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-                  <span className="ml-3 text-xs text-white/50">nexora.kuriftu.app / insights</span>
+              <p className="mb-4 text-sm font-semibold text-primary">Insights</p>
+              <div className="relative overflow-hidden rounded-[1.35rem] border border-border bg-primary shadow-[var(--shadow-soft)]">
+                <div className="absolute inset-0 opacity-[0.12]">
+                  <Image src={resortImages.landscape} alt="" fill className="object-cover" sizes="50vw" />
                 </div>
-                <div className="grid gap-4 p-4 sm:grid-cols-2">
-                  {[
-                    { l: "Occupancy", v: "78%", c: "text-secondary" },
-                    { l: "ADR", v: "$284", c: "text-accent" },
-                    { l: "Guest NPS", v: "62", c: "text-sky-300" },
-                    { l: "AI tasks / day", v: "1,240", c: "text-amber-300" },
-                  ].map((x) => (
-                    <div key={x.l} className="rounded-xl bg-white/5 p-4">
-                      <p className="text-xs text-white/50">{x.l}</p>
-                      <p className={`mt-1 text-2xl font-bold ${x.c}`}>{x.v}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="border-t border-white/10 p-4">
-                  <div className="h-28 rounded-lg bg-gradient-to-t from-accent/30 to-transparent" />
-                  <p className="mt-2 text-center text-[10px] text-white/40">Revenue vs forecast — mock visualization</p>
+                <div className="relative">
+                  <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
+                    <span className="h-2 w-2 rounded-full bg-white/25" />
+                    <span className="h-2 w-2 rounded-full bg-white/25" />
+                    <span className="h-2 w-2 rounded-full bg-white/25" />
+                    <span className="ml-3 font-mono text-[11px] text-white/45">nexora.kuriftu.app</span>
+                  </div>
+                  <div className="grid gap-3 p-4 sm:grid-cols-2">
+                    {[
+                      { l: "Occupancy", v: "78%" },
+                      { l: "ADR", v: "$284" },
+                      { l: "Guest NPS", v: "62" },
+                      { l: "AI tasks / day", v: "1,240" },
+                    ].map((x) => (
+                      <div key={x.l} className="rounded-xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm">
+                        <p className="text-[11px] font-medium uppercase tracking-wider text-white/50">{x.l}</p>
+                        <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{x.v}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-white/10 p-4">
+                    <div className="h-24 rounded-lg bg-gradient-to-t from-white/10 to-transparent" />
+                    <p className="mt-3 text-center text-[10px] text-white/40">Revenue vs forecast · mock</p>
+                  </div>
                 </div>
               </div>
             </motion.div>
-            <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.08 }}>
-              <p className="mb-3 text-sm font-semibold text-primary">AI Concierge</p>
-              <div className="flex h-full min-h-[320px] flex-col rounded-2xl border border-border bg-white shadow-[var(--shadow-soft)]">
-                <div className="border-b border-border bg-primary px-4 py-3 text-white">
-                  <p className="text-sm font-bold">Kuriftu Guest Concierge</p>
-                  <p className="text-[10px] text-white/70">Online · powered by NEXORA</p>
+            <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.06 }}>
+              <p className="mb-4 text-sm font-semibold text-primary">Guest concierge</p>
+              <div className="relative flex min-h-[22rem] flex-col overflow-hidden rounded-[1.35rem] border border-border bg-card shadow-[var(--shadow-soft)]">
+                <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-secondary/10 blur-3xl" aria-hidden />
+                <div className="relative border-b border-border bg-primary px-4 py-4 text-white">
+                  <p className="text-sm font-semibold">Kuriftu Guest Concierge</p>
+                  <p className="text-[11px] text-white/60">Online · NEXORA</p>
                 </div>
-                <div className="flex flex-1 flex-col gap-3 p-4">
-                  <div className="ml-auto max-w-[85%] rounded-2xl bg-slate-100 px-3 py-2 text-sm text-primary">
-                    Can you move our dinner to 8pm and add a spa slot?
+                <div className="relative flex flex-1 flex-col gap-3 p-5">
+                  <div className="ml-auto max-w-[88%] rounded-2xl bg-background px-4 py-2.5 text-sm text-primary">
+                    Can you move dinner to 8pm and add a spa slot?
                   </div>
-                  <div className="max-w-[90%] rounded-2xl bg-accent/10 px-3 py-2 text-sm text-primary">
-                    Done. Dinner is now 8:00 PM at Lakehouse. I’ve reserved Spa at 4:30 PM — confirmation sent to your
+                  <div className="max-w-[92%] rounded-2xl border border-border bg-card px-4 py-2.5 text-sm text-primary shadow-sm">
+                    Done. Dinner is now 8:00 PM at Lakehouse. Spa reserved for 4:30 PM — confirmation sent to your
                     phone.
                   </div>
-                  <div className="mt-auto flex gap-2">
+                  <div className="mt-auto flex gap-2 pt-2">
                     <input
                       readOnly
-                      className="flex-1 rounded-xl border border-border bg-slate-50 px-3 py-2 text-sm text-muted"
-                      placeholder="Type a message…"
+                      className="min-w-0 flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-sm text-muted"
+                      placeholder="Message…"
                     />
                     <button
                       type="button"
-                      className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-primary"
+                      className="shrink-0 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white"
                     >
                       Send
                     </button>
@@ -260,21 +381,33 @@ export function LandingView() {
       </section>
 
       {/* Testimonials */}
-      <section className="bg-white py-20 sm:py-28">
+      <section className="border-t border-border bg-card py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            eyebrow="Social proof"
-            title="Trusted by hospitality leaders"
-            subtitle="Mock testimonials representing the outcomes teams see with intelligent automation."
+            eyebrow="Proof"
+            title="Trusted where hospitality runs 24/7"
+            subtitle="Representative outcomes from properties using intelligent automation at scale."
           />
           <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map((t, i) => (
               <motion.div key={t.id} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.06 }}>
-                <Card hover className="h-full">
-                  <p className="text-sm leading-relaxed text-primary">&ldquo;{t.quote}&rdquo;</p>
-                  <div className="mt-6 border-t border-border pt-4">
-                    <p className="text-sm font-bold text-primary">{t.name}</p>
-                    <p className="text-xs text-muted">{t.role}</p>
+                <Card hover className="h-full overflow-hidden border-border p-0">
+                  <div className="relative h-40 w-full">
+                    <Image
+                      src={resortImages[t.photo]}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="(max-width:768px) 100vw, 33vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+                  </div>
+                  <div className="p-6 pt-2">
+                    <p className="text-sm leading-relaxed text-primary">&ldquo;{t.quote}&rdquo;</p>
+                    <div className="mt-6 border-t border-border pt-5">
+                      <p className="text-sm font-semibold text-primary">{t.name}</p>
+                      <p className="mt-0.5 text-xs text-muted">{t.role}</p>
+                    </div>
                   </div>
                 </Card>
               </motion.div>
@@ -283,24 +416,31 @@ export function LandingView() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section id="cta" className="scroll-mt-20 pb-20 sm:pb-28">
+      {/* CTA */}
+      <section id="cta" className="scroll-mt-24 pb-20 sm:pb-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
             {...fadeUp}
-            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-[#1a3550] px-8 py-14 text-center text-white shadow-[var(--shadow-glow)]"
+            className="relative min-h-[22rem] overflow-hidden rounded-[1.75rem] border border-border shadow-[var(--shadow-glow)] sm:min-h-[24rem]"
           >
-            <div className="absolute -right-16 top-0 h-48 w-48 rounded-full bg-accent/30 blur-3xl" />
-            <div className="absolute -left-10 bottom-0 h-40 w-40 rounded-full bg-secondary/20 blur-3xl" />
-            <div className="relative">
-              <h2 className="text-3xl font-bold sm:text-4xl">Ready to see NEXORA on your property?</h2>
-              <p className="mx-auto mt-4 max-w-xl text-white/80">
-                Book a tailored walkthrough of IntelliRate, Service Optimizer, and guest-facing AI — calibrated for
-                Kuriftu-scale operations.
+            <Image
+              src={resortImages.cta}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="(max-width:1280px) 100vw, 1280px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0d1412]/92 via-[#0d1412]/75 to-[#0d1412]/45" />
+            <div className="relative px-8 py-16 text-center sm:px-12 sm:py-20">
+              <h2 className="mx-auto max-w-xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                See NEXORA on Kuriftu — and your next property.
+              </h2>
+              <p className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-white/75 sm:text-base">
+                Walk through IntelliRate, Service Optimizer, and guest-facing AI in one tailored session.
               </p>
-              <div className="mt-8 flex justify-center">
-                <Button href="mailto:hello@kuriftu.nexora" variant="secondary" className="px-8 py-3 text-base">
-                  Book a Demo
+              <div className="mt-10">
+                <Button href="mailto:hello@kuriftu.nexora" variant="light" className="px-10 py-3 text-base">
+                  Book a demo
                 </Button>
               </div>
             </div>

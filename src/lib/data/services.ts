@@ -1,11 +1,53 @@
 import type {
   AiExplanation,
   ChartRange,
+  KuriftuServicePricingRow,
   MarketIntelItem,
   ServicePriceRow,
 } from "./types";
 
 /** Mock API: GET /api/v1/nexora/services/pricing */
+/** Offline shape when the Python pricing API is unreachable */
+export function buildFallbackKuriftuRows(): KuriftuServicePricingRow[] {
+  return fetchServicePricingRows().map((r, i) => {
+    // Create significant, realistic published price differences
+    let publishedPrice: number;
+    
+    if (r.category === "Spa") {
+      publishedPrice = Math.round(r.basePrice * (0.85 + Math.random() * 0.15)); // 85-100% of base
+    } else if (r.category === "Dining") {
+      publishedPrice = Math.round(r.basePrice * (0.95 + Math.random() * 0.15)); // 95-110% of base
+    } else if (r.category === "Boat Ride") {
+      publishedPrice = Math.round(r.basePrice * (0.9 + Math.random() * 0.2)); // 90-110% of base
+    } else if (r.category === "Room Types") {
+      publishedPrice = Math.round(r.basePrice * (0.88 + Math.random() * 0.12)); // 88-100% of base
+    } else {
+      publishedPrice = Math.round(r.basePrice * (0.9 + Math.random() * 0.1)); // 90-100% of base
+    }
+    
+    return {
+      id: r.id,
+      numericId: i,
+      name: r.name,
+      category: r.category,
+      basePrice: r.basePrice,
+      publishedPrice: publishedPrice,
+      aiSuggestedPrice: r.aiPrice,
+      demandLevel: r.demandLevel,
+      demandIndex: r.demandLevel === "Surge" ? 90 : r.demandLevel === "High" ? 72 : r.demandLevel === "Medium" ? 48 : 28,
+      changePctPublishedVsBase: ((publishedPrice - r.basePrice) / r.basePrice) * 100,
+      changePctSuggestedVsPublished: ((r.aiPrice - publishedPrice) / publishedPrice) * 100,
+      status: r.status,
+      insight:
+        r.demandLevel === "Surge"
+          ? "Simulated surge window — uplift recommended on experiences and spa."
+          : "Static demo data: start the Flask backend for live elasticity-driven suggestions.",
+      confidence: 75 + Math.round(Math.random() * 15), // 75-90% confidence
+      competitorAvg: Math.round(r.basePrice * 1.045 * 100) / 100,
+    };
+  });
+}
+
 export function fetchServicePricingRows(): ServicePriceRow[] {
   return [
     {

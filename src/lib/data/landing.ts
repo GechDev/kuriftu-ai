@@ -1,35 +1,47 @@
+import type { ResortImageKey } from "@/lib/resortImages";
+
 export const features = [
   {
     id: "receptionist",
     title: "AI Receptionist",
-    description: "Voice and SMS handling that books, reschedules, and answers FAQs without wait times.",
+    description:
+      "Voice and SMS that books, reschedules, and answers policy-aware FAQs — without the hold music.",
     icon: "phone" as const,
+    image: "lobby" satisfies ResortImageKey,
   },
   {
     id: "concierge",
     title: "AI Concierge",
-    description: "24/7 automation for requests, amenities, and itineraries tailored to each guest.",
+    description:
+      "Around-the-clock itineraries, amenities, and requests shaped by each guest’s stay context.",
     icon: "concierge" as const,
+    image: "sunsetDeck" satisfies ResortImageKey,
   },
   {
     id: "intellirate",
     title: "IntelliRate Engine",
-    description: "Dynamic room pricing powered by demand, events, and competitor signals in real time.",
+    description:
+      "Room rates that respond to demand, events, and comp sets — transparent, explainable, fast.",
     icon: "chart" as const,
+    image: "minimalSuite" satisfies ResortImageKey,
   },
   {
     id: "memory",
     title: "Guest Memory System",
-    description: "Preferences, occasions, and history surfaced to staff for truly personal stays.",
+    description:
+      "Preferences, occasions, and history surfaced to staff so every return feels remembered.",
     icon: "brain" as const,
+    image: "wellnessDetail" satisfies ResortImageKey,
   },
   {
     id: "insights",
     title: "Insights Dashboard",
-    description: "Executive-ready analytics on revenue, satisfaction, and operational efficiency.",
+    description:
+      "Executive narratives on revenue, satisfaction, and operations — ready for the boardroom.",
     icon: "layout" as const,
+    image: "aerialLake" satisfies ResortImageKey,
   },
-];
+] as const;
 
 export const steps = [
   {
@@ -65,22 +77,25 @@ export const testimonials = [
   {
     id: "1",
     quote:
-      "We reclaimed dozens of front-desk hours weekly. Revenue per available room is up meaningfully after IntelliRate.",
+      "We reclaimed dozens of front-desk hours weekly. RevPAR is up meaningfully after IntelliRate went live.",
     name: "Elena Marchetti",
     role: "General Manager, Lakeside Resort Group",
+    photo: "villa" satisfies ResortImageKey,
   },
   {
     id: "2",
     quote:
-      "The concierge automation feels invisible to guests — exactly what we wanted. NEXORA pays for itself in a quarter.",
+      "The concierge automation feels invisible to guests — exactly what we wanted. NEXORA paid for itself in a quarter.",
     name: "James Okonkwo",
     role: "Director of Operations, Urban Heritage Hotels",
+    photo: "infinityPool" satisfies ResortImageKey,
   },
   {
     id: "3",
     quote:
-      "Finally a platform built for hoteliers, not generic chatbots. The insights dashboard is board-meeting ready.",
+      "Finally a platform built for hoteliers, not generic chatbots. The insights layer is board-meeting ready.",
     name: "Sofia Andersson",
     role: "VP Revenue, Nordic Hospitality Collective",
+    photo: "wineLounge" satisfies ResortImageKey,
   },
-];
+] as const;

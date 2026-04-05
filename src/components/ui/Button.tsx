@@ -1,16 +1,18 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "outline";
+type Variant = "primary" | "secondary" | "ghost" | "outline" | "light";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-accent text-white shadow-md hover:shadow-lg hover:bg-[#5a52e6] border border-transparent",
+    "bg-primary text-white shadow-sm hover:bg-primary/90 border border-transparent active:scale-[0.99]",
   secondary:
-    "bg-secondary text-primary font-semibold shadow-md hover:shadow-lg hover:brightness-95 border border-transparent",
-  ghost: "bg-white/10 text-white border border-white/20 hover:bg-white/15 backdrop-blur-sm",
+    "bg-secondary/15 text-primary font-semibold hover:bg-secondary/22 border border-secondary/20 active:scale-[0.99]",
+  ghost: "bg-white/10 text-white border border-white/25 hover:bg-white/14 backdrop-blur-md",
   outline:
-    "bg-white text-primary border border-border hover:border-accent/40 hover:shadow-soft",
+    "bg-card text-primary border border-border hover:border-primary/20 hover:shadow-[var(--shadow-soft)]",
+  light:
+    "bg-white/95 text-primary shadow-sm hover:bg-white border border-white/40 active:scale-[0.99]",
 };
 
 export function Button({
@@ -29,7 +31,7 @@ export function Button({
   onClick?: () => void;
 }) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-300 active:scale-[0.98]";
+    "inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-300";
   const cls = `${base} ${variants[variant]} ${className}`;
 
   if (href) {

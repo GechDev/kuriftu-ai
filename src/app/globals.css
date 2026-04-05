@@ -1,30 +1,32 @@
 @import "tailwindcss";
 
+/* Kuriftu NEXORA — warm paper, deep forest ink, bronze metal accent (editorial / hospitality) */
 :root {
-  --background: #f6f8fb;
-  --foreground: #0f172a;
-  --primary: #2a4d6e;
-  --accent: #6c63ff;
-  --secondary: #4ecca3;
-  --card: #ffffff;
-  --muted: #64748b;
-  --border: rgba(42, 77, 110, 0.12);
+  --background: #f2f0ea;
+  --foreground: #121816;
+  --primary: #1a2e2a;
+  --accent: #8f6e45;
+  --secondary: #355a52;
+  --card: #fcfaf6;
+  --muted: #5a6460;
+  --border: rgba(26, 46, 42, 0.11);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-primary: #2a4d6e;
-  --color-accent: #6c63ff;
-  --color-secondary: #4ecca3;
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-secondary: var(--secondary);
   --color-card: var(--card);
   --color-muted: var(--muted);
   --color-border: var(--border);
   --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --shadow-soft: 0 4px 24px -4px rgba(42, 77, 110, 0.12),
-    0 8px 48px -12px rgba(108, 99, 255, 0.08);
-  --shadow-glow: 0 0 0 1px rgba(108, 99, 255, 0.15), 0 12px 40px -8px rgba(108, 99, 255, 0.25);
+  --shadow-soft: 0 2px 20px rgba(26, 46, 42, 0.06),
+    0 12px 48px -16px rgba(26, 46, 42, 0.08);
+  --shadow-glow: 0 0 0 1px rgba(143, 110, 69, 0.12),
+    0 20px 50px -20px rgba(26, 46, 42, 0.18);
 }
 
 body {
@@ -33,7 +35,6 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Smooth scroll for in-page anchors */
 html {
   scroll-behavior: smooth;
 }
