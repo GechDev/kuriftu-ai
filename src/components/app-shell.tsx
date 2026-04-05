@@ -10,6 +10,7 @@ import {
   IconResort,
   IconRooms,
   IconShield,
+  IconSpark,
 } from "@/components/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,6 +19,9 @@ import { Button, LinkButton } from "./ui";
 const mainNav = [
   { href: "/rooms", label: "Rooms & suites", Icon: IconRooms },
   { href: "/resorts", label: "Our resorts", Icon: IconResort },
+  { href: "/intellirate", label: "IntelliRate", Icon: IconSpark },
+  { href: "/services", label: "AI Optimizer", Icon: IconShield },
+  { href: "/pricing", label: "Premium Pricing", Icon: IconBookings },
   { href: "/bookings", label: "Reservations", Icon: IconBookings },
   { href: "/requests", label: "Guest services", Icon: IconRequests },
   { href: "/notifications", label: "Messages", Icon: IconBell },

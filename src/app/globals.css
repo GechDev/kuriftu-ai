@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-<<<<<<< HEAD
 /* Kuriftu NEXORA — warm paper, deep forest ink, bronze metal accent (editorial / hospitality) */
 :root {
   --background: #f2f0ea;
@@ -11,58 +10,11 @@
   --card: #fcfaf6;
   --muted: #5a6460;
   --border: rgba(26, 46, 42, 0.11);
-=======
-/* Kuriftu — resort & spa: always light, white grounds, warm stone typography */
-:root {
-  --background: #ffffff;
-  --foreground: #1c1917;
-  --surface: #ffffff;
-  --surface-2: #fafaf9;
-  --border: #e7e5e4;
-  --muted: #78716c;
-  --accent: #134e4a;
-  --accent-hover: #0f3d3a;
-  --accent-muted: rgba(19, 78, 74, 0.09);
-  --accent-fg: #fafaf9;
-  --gold: #a16207;
-  --gold-muted: rgba(161, 98, 7, 0.12);
-  --danger: #b91c1c;
-  --danger-muted: #fef2f2;
-  --ring: #134e4a;
-  --shadow-card: 0 1px 3px rgba(28, 25, 23, 0.06);
-  --shadow-card-hover: 0 12px 40px rgba(28, 25, 23, 0.08);
-  --shadow-lift: 0 25px 50px -12px rgba(28, 25, 23, 0.12);
-}
-
-/* Keep palette light even when OS prefers dark — hospitality sites stay bright */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ffffff;
-    --foreground: #1c1917;
-    --surface: #ffffff;
-    --surface-2: #fafaf9;
-    --border: #e7e5e4;
-    --muted: #78716c;
-    --accent: #134e4a;
-    --accent-hover: #0f3d3a;
-    --accent-muted: rgba(19, 78, 74, 0.09);
-    --accent-fg: #fafaf9;
-    --gold: #a16207;
-    --gold-muted: rgba(161, 98, 7, 0.12);
-    --danger: #b91c1c;
-    --danger-muted: #fef2f2;
-    --ring: #134e4a;
-    --shadow-card: 0 1px 3px rgba(28, 25, 23, 0.06);
-    --shadow-card-hover: 0 12px 40px rgba(28, 25, 23, 0.08);
-    --shadow-lift: 0 25px 50px -12px rgba(28, 25, 23, 0.12);
-  }
->>>>>>> 088361d3f8db2167b4729ad2ffccf5e7ce4adb03
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-<<<<<<< HEAD
   --color-primary: var(--primary);
   --color-accent: var(--accent);
   --color-secondary: var(--secondary);
@@ -77,38 +29,14 @@
     0 20px 50px -20px rgba(26, 46, 42, 0.18);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-=======
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-border: var(--border);
-  --color-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-muted: var(--accent-muted);
-  --color-accent-fg: var(--accent-fg);
-  --color-danger: var(--danger);
-  --color-danger-muted: var(--danger-muted);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
->>>>>>> 088361d3f8db2167b4729ad2ffccf5e7ce4adb03
-}
-
-html {
-  scroll-behavior: smooth;
-<<<<<<< HEAD
-=======
-  color-scheme: light;
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -121,16 +49,16 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    var(--gold) 20%,
-    var(--gold) 80%,
+    var(--accent) 20%,
+    var(--accent) 80%,
     transparent
   );
   opacity: 0.35;
 }
 
 ::selection {
-  background-color: var(--accent-muted);
-  color: var(--foreground);
+  background-color: var(--accent);
+  color: var(--background);
 }
 
 @keyframes fade-up {
@@ -170,6 +98,7 @@ body {
   animation: float-soft 5s ease-in-out infinite;
 }
 
+/* Let's keep the rest of the voice things just in case */
 .lk-room-container {
   --lk-control-bar-margin: 0;
 }
@@ -242,8 +171,8 @@ body {
 
 /* LiveKit bar visualizer — premium pill bars */
 .voice-bar-visualizer.lk-audio-bar-visualizer {
-  --lk-fg: #134e4a;
-  --lk-va-bg: rgba(19, 78, 74, 0.12);
+  --lk-fg: var(--primary);
+  --lk-va-bg: rgba(26, 46, 42, 0.12);
 }
 
 .voice-bar-pill.lk-audio-bar {
@@ -252,10 +181,10 @@ body {
   border-radius: 9999px;
   background: linear-gradient(
     180deg,
-    rgba(45, 212, 191, 0.35) 0%,
-    rgba(19, 78, 74, 0.55) 100%
+    rgba(143, 110, 69, 0.35) 0%,
+    rgba(26, 46, 42, 0.55) 100%
   );
-  box-shadow: 0 0 0 1px rgba(19, 78, 74, 0.08);
+  box-shadow: 0 0 0 1px rgba(26, 46, 42, 0.08);
   transition:
     box-shadow 0.12s ease-out,
     filter 0.12s ease-out;
@@ -268,15 +197,14 @@ body {
 }
 
 .voice-bar-pill.lk-audio-bar[data-lk-highlighted="true"] {
-  background: linear-gradient(180deg, #5eead4 0%, #0d9488 45%, #134e4a 100%);
+  background: linear-gradient(180deg, #d3c4a9 0%, #8f6e45 45%, #1a2e2a 100%);
   box-shadow:
-    0 0 24px rgba(45, 212, 191, 0.55),
-    0 0 48px rgba(19, 78, 74, 0.2);
+    0 0 24px rgba(143, 110, 69, 0.55),
+    0 0 48px rgba(26, 46, 42, 0.2);
   filter: brightness(1.08);
 }
 
 .voice-control-bar-wrap .lk-room-container,
 .voice-control-bar-wrap [class*="lk-"] {
-  --lk-control-bar-ac-bg: rgba(19, 78, 74, 0.08);
->>>>>>> 088361d3f8db2167b4729ad2ffccf5e7ce4adb03
+  --lk-control-bar-ac-bg: rgba(26, 46, 42, 0.08);
 }
