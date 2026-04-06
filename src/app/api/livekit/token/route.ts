@@ -7,7 +7,8 @@ const AGENT_NAME = "kuriftu-hotel";
 
 const backendBase =
   process.env.BACKEND_INTERNAL_URL?.replace(/\/$/, "") ||
-  "http://127.0.0.1:4000";
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://kuriftu-ai-s2fu.onrender.com"; // Production backend URL
 
 export async function POST(req: Request) {
   const apiKey = process.env.LIVEKIT_API_KEY;
