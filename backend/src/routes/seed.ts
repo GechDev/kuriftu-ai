@@ -83,13 +83,12 @@ seedRouter.post("/run", async (req, res) => {
     for (const service of services) {
       await prisma.resortService.upsert({
         where: {
-          resortId_category_title: {
-            resortId: service.resortId,
-            category: service.category,
-            title: service.title,
-          },
+          id: `${service.resortId}_${service.category}_${service.title}`.replace(/\s+/g, '_').toLowerCase(),
         },
-        create: service,
+        create: {
+          ...service,
+          id: `${service.resortId}_${service.category}_${service.title}`.replace(/\s+/g, '_').toLowerCase(),
+        },
         update: service,
       });
     }
