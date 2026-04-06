@@ -11,6 +11,7 @@ import { roomsRouter } from "./routes/rooms.js";
 import { serviceRequestsRouter } from "./routes/serviceRequests.js";
 import { publicCatalogRouter } from "./routes/public-catalog.js";
 import { pricingAdminRouter } from "./routes/pricing-admin.js";
+import { seedRouter } from "./routes/seed.js";
 
 export function createApp() {
   const app = express();
@@ -58,6 +59,7 @@ export function createApp() {
   app.use("/api/auth", authRouter);
   app.use("/api/public", publicCatalogRouter);
   app.use("/api/pricing", pricingAdminRouter);
+  app.use("/api/seed", seedRouter);
   app.use("/api", profileRouter);
   app.use("/api/resorts", resortsRouter);
   app.use("/api/rooms", roomsRouter);

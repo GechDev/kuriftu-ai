@@ -5,14 +5,14 @@ type Variant = "primary" | "secondary" | "ghost" | "outline" | "light";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-primary text-white shadow-sm hover:bg-primary/90 border border-transparent active:scale-[0.99]",
+    "bg-gradient-to-r from-gold-400 to-amber-500 text-black shadow-sm hover:from-gold-500 hover:to-amber-600 border border-transparent active:scale-[0.99]",
   secondary:
-    "bg-secondary/15 text-primary font-semibold hover:bg-secondary/22 border border-secondary/20 active:scale-[0.99]",
+    "bg-black/30 text-white font-semibold hover:bg-black/50 border border-white/20 active:scale-[0.99]",
   ghost: "bg-white/10 text-white border border-white/25 hover:bg-white/14 backdrop-blur-md",
   outline:
-    "bg-card text-primary border border-border hover:border-primary/20 hover:shadow-[var(--shadow-soft)]",
+    "bg-black/40 text-white border border-white/20 hover:border-gold-400/50 hover:text-gold-400 hover:bg-black/60",
   light:
-    "bg-white/95 text-primary shadow-sm hover:bg-white border border-white/40 active:scale-[0.99]",
+    "bg-white/95 text-black shadow-sm hover:bg-white border border-white/40 active:scale-[0.99]",
 };
 
 export function Button({

@@ -1,6 +1,9 @@
+"use client";
+
 import { VoiceConcierge } from "@/components/VoiceConcierge";
 import { IconMic, IconRooms, IconSpark } from "@/components/icons";
 import { LinkButton } from "@/components/ui";
+import { useEffect, useState } from "react";
 
 const benefits = [
   {
@@ -21,8 +24,33 @@ const benefits = [
 ];
 
 export default function VoicePage() {
+  const samples = [
+    "Book me a room for April 18",
+    "I need fresh towels",
+    "What's the spa price?",
+  ];
+  const [line, setLine] = useState("");
+  const [sampleIdx, setSampleIdx] = useState(0);
+
+  useEffect(() => {
+    const phrase = samples[sampleIdx] ?? "";
+    let i = 0;
+    const typeTimer = setInterval(() => {
+      i += 1;
+      setLine(phrase.slice(0, i));
+      if (i >= phrase.length) {
+        clearInterval(typeTimer);
+        setTimeout(() => {
+          setSampleIdx((prev) => (prev + 1) % samples.length);
+          setLine("");
+        }, 1400);
+      }
+    }, 45);
+    return () => clearInterval(typeTimer);
+  }, [sampleIdx]);
+
   return (
-    <div className="bg-white">
+    <div className="drift-bg bg-white">
       <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
         <div className="mb-10 text-center lg:mb-12 lg:text-start">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted">
@@ -35,10 +63,21 @@ export default function VoicePage() {
             The fastest way to explore Kuriftu is to speak with your host. Use the panel below,
             then browse or book on the site whenever you need a written record.
           </p>
+          <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2 shadow-[var(--shadow-sm)]">
+            <span className="float-luxury h-2.5 w-2.5 rounded-full bg-[#6B21E5]" />
+            <span className="text-sm text-muted">“{line}”</span>
+          </div>
         </div>
 
         <div className="flex flex-col gap-12 xl:grid xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start xl:gap-14">
           <div className="order-1 w-full min-w-0 xl:order-1">
+            <div className="mb-8 flex justify-center xl:justify-start">
+              <div className="relative flex h-28 w-28 items-center justify-center">
+                <span className="absolute inset-0 rounded-full bg-[#6B21E5]/20 blur-xl" />
+                <span className="absolute inset-0 rounded-full border border-[#6B21E5]/35 pulse-glow" />
+                <span className="float-luxury h-10 w-10 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#6B21E5]" />
+              </div>
+            </div>
             <VoiceConcierge />
           </div>
 

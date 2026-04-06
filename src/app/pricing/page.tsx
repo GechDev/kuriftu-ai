@@ -118,45 +118,52 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.02] via-white to-primary/[0.03]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--accent)_0%,_transparent_50%)] opacity-20" />
+      <section className="reveal relative overflow-hidden h-96">
+        {/* Hero Image - Direct CSS Background */}
+        <div 
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${resortImages.hero})` }}
+        >
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+        </div>
         
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        {/* Content positioned over image */}
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 h-full flex items-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="text-center"
           >
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 mb-6 text-[10px] font-medium text-accent backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-3 py-1.5 mb-6 text-[10px] font-medium text-white">
               <Sparkles className="h-3 w-3" />
               Premium Experiences
             </div>
             
-            <h1 className="font-display text-5xl font-light tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+            <h1 className="font-display text-5xl font-light tracking-tight text-white sm:text-6xl lg:text-7xl">
               Resort Services
-              <span className="block text-2xl font-light text-muted sm:text-3xl lg:text-4xl">
+              <span className="block text-2xl font-light text-white/90 sm:text-3xl lg:text-4xl">
                 & Experiences
               </span>
             </h1>
             
-            <p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-muted/90 sm:text-xl">
+            <p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-white/80 sm:text-xl">
               Discover our curated collection of luxury experiences, from signature spa treatments 
               to exclusive dining. Each service is thoughtfully designed and priced 
               using our intelligent optimization system.
             </p>
             
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <div className="flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-sm text-muted backdrop-blur-sm border border-border/20 shadow-sm">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
+              <div className="flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-sm text-white border border-white/30 shadow-sm">
+                <div className="h-2 w-2 rounded-full bg-green-400" />
                 Live pricing
               </div>
-              <div className="flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-sm text-muted backdrop-blur-sm border border-border/20 shadow-sm">
+              <div className="flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-sm text-white border border-white/30 shadow-sm">
                 <MapPin className="h-3.5 w-3.5" />
                 On-property
               </div>
-              <div className="flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-sm text-muted backdrop-blur-sm border border-border/20 shadow-sm">
+              <div className="flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-sm text-white border border-white/30 shadow-sm">
                 <Star className="h-3.5 w-3.5" />
                 AI optimized
               </div>
@@ -226,7 +233,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <section className="reveal mx-auto max-w-6xl px-4 py-10 sm:px-6">
         {loading && services.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted">
             <Loader2 className="h-8 w-8 animate-spin text-accent" aria-hidden />
@@ -256,16 +263,16 @@ export default function PricingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
                 whileHover={{ y: -4 }}
-                className="group"
+                className="group reveal"
               >
-                <Card className="h-full overflow-hidden border-0 bg-white shadow-lg shadow-black/[0.04] hover:shadow-2xl hover:shadow-black/[0.08] transition-all duration-300">
+                <Card className="tilt-card h-full overflow-hidden border-0 bg-white shadow-lg shadow-black/[0.04] hover:shadow-2xl hover:shadow-black/[0.08] transition-all duration-300">
                   <div className="relative h-56 w-full overflow-hidden">
                     <SafeImage
                       src={img}
                       alt={service.title}
                       fill
                       sizes="(max-width:768px) 100vw, 33vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="card-zoom object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     

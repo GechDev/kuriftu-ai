@@ -11,8 +11,8 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] transition-all duration-300 ${
-        hover ? "hover:-translate-y-1 hover:shadow-[var(--shadow-glow)]" : ""
+      className={`rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl p-6 shadow-xl transition-all duration-300 ${
+        hover ? "hover:-translate-y-1 hover:shadow-2xl hover:border-gold-400/30" : ""
       } ${className}`}
     >
       {children}

@@ -15,15 +15,6 @@ import { useAuth } from "@/contexts/auth-context";
 
 const modules = [
   {
-    href: "/admin/revenue",
-    title: "Revenue intelligence",
-    description:
-      "Occupancy, demand curves, and room-rate guidance — the same signals you use for BAR and packages.",
-    icon: BarChart3,
-    accent: "from-violet-500/15 to-fuchsia-500/10",
-    iconBg: "bg-violet-500/12 text-violet-700",
-  },
-  {
     href: "/admin/rates",
     title: "Experience pricing",
     description:
@@ -31,6 +22,15 @@ const modules = [
     icon: Wallet,
     accent: "from-emerald-500/15 to-teal-500/10",
     iconBg: "bg-emerald-500/12 text-emerald-800",
+  },
+  {
+    href: "/admin/revenue",
+    title: "Revenue intelligence",
+    description:
+      "Occupancy, demand curves, and room-rate guidance — the same signals you use for BAR and packages.",
+    icon: BarChart3,
+    accent: "from-violet-500/15 to-fuchsia-500/10",
+    iconBg: "bg-violet-500/12 text-violet-700",
   },
   {
     href: "/admin/operations",
@@ -80,7 +80,7 @@ export default function AdminHubPage() {
                 >
                   <Link
                     href={mod.href}
-                    className={`group relative flex flex-col overflow-hidden rounded-3xl border transition-all duration-300 sm:flex-row sm:items-stretch ${
+                    className={`tilt-card group relative flex flex-col overflow-hidden rounded-3xl border transition-all duration-300 sm:flex-row sm:items-stretch ${
                       active
                         ? "border-foreground/15 bg-white shadow-[0_2px_40px_-12px_rgba(0,0,0,0.12)]"
                         : "border-border/80 bg-white/70 shadow-sm hover:border-foreground/10 hover:bg-white hover:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.1)]"

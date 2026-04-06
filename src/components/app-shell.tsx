@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/contexts/auth-context";
 import { isStaff } from "@/lib/staff";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import {
   IconBell,
   IconBookings,
@@ -15,6 +16,7 @@ import {
 } from "@/components/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { Button, LinkButton } from "./ui";
 
 const mainNav = [
@@ -31,6 +33,54 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
   const hideNav = pathname === "/login" || pathname === "/register";
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+
+    const revealNodes = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -10% 0px" },
+    );
+    revealNodes.forEach((node) => revealObserver.observe(node));
+
+    const cleanupTilt: Array<() => void> = [];
+    if (!mq.matches) {
+      const cards = Array.from(document.querySelectorAll<HTMLElement>(".tilt-card"));
+      cards.forEach((card) => {
+        const onMove = (e: MouseEvent) => {
+          const rect = card.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width - 0.5;
+          const y = (e.clientY - rect.top) / rect.height - 0.5;
+          card.style.transform = `rotateX(${y * 12}deg) rotateY(${x * 12}deg) scale(1.02)`;
+          card.style.transition = "transform 0.1s ease";
+        };
+        const onLeave = () => {
+          card.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
+          card.style.transition = "transform 0.3s ease";
+        };
+
+        card.addEventListener("mousemove", onMove);
+        card.addEventListener("mouseleave", onLeave);
+        cleanupTilt.push(() => {
+          card.removeEventListener("mousemove", onMove);
+          card.removeEventListener("mouseleave", onLeave);
+        });
+      });
+    }
+
+    return () => {
+      revealObserver.disconnect();
+      cleanupTilt.forEach((fn) => fn());
+    };
+  }, [pathname]);
 
   if (loading) {
     return (
@@ -50,26 +100,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-full flex-col bg-white">
       {!hideNav ? (
-        <header className="sticky top-0 z-50 border-b border-border bg-white/95 backdrop-blur-md">
-          <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between gap-6 px-4 sm:px-6">
+        <header className="sticky top-0 z-50 border-b border-border/60 bg-background/72 shadow-[0_8px_30px_-24px_rgba(0,0,0,0.45)] backdrop-blur-2xl transition-all duration-300">
+          <div className="mx-auto flex h-[4.15rem] max-w-7xl items-center justify-between gap-4 px-4 sm:h-[4.35rem] sm:gap-5 sm:px-6 lg:px-8">
             <Link
               href="/"
-              className="group flex items-center gap-3 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+              className="group flex items-center gap-3.5 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
-              <span className="flex h-11 w-11 items-center justify-center border border-border bg-accent text-accent-fg transition group-hover:bg-accent-hover">
-                <IconMark className="h-6 w-6" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10">
+                <IconMark className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
               </span>
               <span className="flex flex-col">
-                <span className="font-display text-xl font-semibold leading-none tracking-tight text-foreground sm:text-2xl">
+                <span className="font-display text-[1.12rem] font-medium leading-none tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-[1.2rem] xl:text-[1.24rem]">
                   Kuriftu
                 </span>
-                <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.28em] text-muted">
+                <span className="mt-1 text-[8px] font-semibold uppercase tracking-[0.28em] text-muted sm:text-[9px] sm:tracking-[0.33em]">
                   Collection
                 </span>
               </span>
             </Link>
 
-            <nav className="hidden items-center gap-1 lg:flex">
+            <nav className="hidden items-center gap-0.5 lg:flex xl:gap-1">
               <LinkButton
                 href="/voice"
                 className="mr-2 !px-4 !py-2.5 text-xs font-semibold uppercase tracking-[0.1em]"
@@ -90,10 +140,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Link
                     key={href}
                     href={href}
-                    className={`flex items-center gap-2 px-3 py-2 text-xs font-medium uppercase tracking-[0.12em] transition ${
+                    className={`flex items-center gap-1.5 rounded-full px-2.5 py-2 text-[11px] font-medium uppercase tracking-[0.1em] transition xl:px-3 ${
                       active
-                        ? "text-accent"
-                        : "text-muted hover:text-foreground"
+                        ? "bg-accent/10 text-accent"
+                        : "text-muted hover:bg-foreground/[0.04] hover:text-foreground"
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5 opacity-70" />
@@ -121,7 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2">
               {user ? (
                 <>
-                  <span className="hidden max-w-[200px] truncate text-xs text-muted xl:inline">
+                <span className="hidden max-w-[180px] truncate text-[11px] text-muted xl:inline">
                     {user.email}
                   </span>
                   <Button
@@ -161,12 +211,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               Voice
             </Link>
-            {mainNav.map(({ href, label }) => (
+            {mainNav
+              .filter((item) => (item.staff ? isStaff(user) : true))
+              .map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 className={`shrink-0 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide ${
-                  pathname === href || pathname.startsWith(href + "/")
+                  href === "/admin"
+                    ? pathname.startsWith("/admin")
+                    : pathname === href || pathname.startsWith(href + "/")
                     ? "text-accent"
                     : "text-muted"
                 }`}
@@ -189,66 +243,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 bg-white">{children}</main>
 
       {!hideNav ? (
-        <footer className="border-t border-border bg-surface-2">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-3 sm:px-6">
-            <div>
-              <p className="font-display text-lg font-semibold text-foreground">Kuriftu</p>
-              <p className="mt-3 text-sm leading-relaxed text-muted">
-                Voice-first concierge for the collection—plus refined rooms, regional dining, and
-                attentive guest care.
-              </p>
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">
-                Plan your visit
-              </p>
-              <ul className="mt-4 space-y-2 text-sm text-foreground">
-                <li>
-                  <Link href="/voice" className="font-medium text-accent transition hover:underline">
-                    Voice agent
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/rooms" className="text-muted transition hover:text-accent">
-                    Rooms & suites
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/resorts" className="text-muted transition hover:text-accent">
-                    Resort destinations
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">
-                Guest care
-              </p>
-              <ul className="mt-4 space-y-2 text-sm text-foreground">
-                <li>
-                  <Link href="/requests" className="text-muted transition hover:text-accent">
-                    Service requests
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/bookings" className="text-muted transition hover:text-accent">
-                    Your reservations
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/notifications" className="text-muted transition hover:text-accent">
-                    Messages
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-border py-6 text-center">
-            <p className="text-xs text-muted">
-              © {new Date().getFullYear()} Kuriftu Collection. Crafted for restful stays.
-            </p>
-          </div>
-        </footer>
+        <SiteFooter />
       ) : null}
     </div>
   );

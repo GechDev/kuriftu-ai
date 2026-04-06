@@ -16,6 +16,8 @@ import { api, ApiError } from "@/lib/api";
 import type { Booking, ServiceRequest, ServiceRequestStatus } from "@/lib/types";
 import { StaffSubnav } from "@/components/admin/StaffSubnav";
 import { useCallback, useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Bed, DollarSign, Users, Clock, Plus } from "lucide-react";
 
 export default function AdminPage() {
   const { token } = useAuth();
@@ -108,209 +110,269 @@ export default function AdminPage() {
 
   return (
     <RequireAuth adminOnly>
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
-        <StaffSubnav segment="Operations" />
-        <PageHeader
-          eyebrow="Staff"
-          title="Admin dashboard"
-          description="Revenue, active stays, room inventory, and the full service queue."
-        />
-        {error ? (
-          <p className="mt-6 rounded-sm border border-danger/30 bg-danger-muted px-4 py-3 text-sm text-danger">
-            {error}
-          </p>
-        ) : null}
-
-        {!dash ? (
-          <div className="mt-16 flex justify-center">
-            <Spinner />
-          </div>
-        ) : (
-          <>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                { label: "Total bookings", value: dash.totalBookings },
-                { label: "Total revenue", value: `$${dash.totalRevenue}` },
-                { label: "Active stays", value: dash.activeBookings.length },
-                {
-                  label: "Pending requests",
-                  value: dash.pendingServiceRequests.length,
-                },
-              ].map((stat) => (
-                <Card
-                  key={stat.label}
-                  className="relative overflow-hidden border-border/80 p-5"
-                >
-                  <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-accent/10 blur-2xl" />
-                  <p className="relative text-xs font-semibold uppercase tracking-wider text-muted">
-                    {stat.label}
-                  </p>
-                  <p className="relative mt-2 text-2xl font-semibold tabular-nums text-foreground">
-                    {stat.value}
-                  </p>
-                </Card>
-              ))}
+      <div className="min-h-screen bg-gradient-to-b from-black via-[#0a1210] to-[#0a1210] pb-20">
+        <div className="relative z-20 mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+          <StaffSubnav segment="Operations" variant="onDark" />
+        </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <PageHeader
+            eyebrow="Staff"
+            title="Admin dashboard"
+            description="Revenue, active stays, room inventory, and the full service queue."
+            className="text-white"
+          />
+          {error && (
+            <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
+              {error}
             </div>
+          )}
 
-            <div className="mt-14 grid gap-10 lg:grid-cols-2">
-              <section>
-                <h2 className="text-lg font-semibold text-foreground">
-                  Active bookings
-                </h2>
-                {dash.activeBookings.length === 0 ? (
-                  <div className="mt-4">
-                    <EmptyState title="No active stays" />
-                  </div>
+          {!dash ? (
+            <div className="mt-16 flex justify-center">
+              <Spinner />
+            </div>
+          ) : (
+            <>
+              {/* KPI Cards */}
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  { icon: Bed, label: "Total bookings", value: dash.totalBookings },
+                  { icon: DollarSign, label: "Total revenue", value: `$${dash.totalRevenue}` },
+                  { icon: Users, label: "Active stays", value: dash.activeBookings.length },
+                  { icon: Clock, label: "Pending requests", value: dash.pendingServiceRequests.length },
+                ].map((stat, i) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                  >
+                    <Card className="relative overflow-hidden border-white/10 bg-black/40 backdrop-blur-xl p-5 before:absolute before:inset-y-3 before:left-0 before:w-1 before:rounded-full before:bg-gradient-to-b before:from-gold-400 before:to-amber-600 before:content-['']">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider text-white/50">
+                            {stat.label}
+                          </p>
+                          <p className="mt-2 text-2xl font-semibold tabular-nums text-white">
+                            {stat.value}
+                          </p>
+                        </div>
+                        <stat.icon className="h-8 w-8 text-gold-400/50" />
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="mt-14 grid gap-10 lg:grid-cols-2">
+                {/* Active Bookings Section */}
+                <section>
+                  <h2 className="text-lg font-semibold text-white">Active bookings</h2>
+                  {dash.activeBookings.length === 0 ? (
+                    <div className="mt-4">
+                      <EmptyState title="No active stays" />
+                    </div>
+                  ) : (
+                    <ul className="mt-4 space-y-3">
+                      {dash.activeBookings.map((b, idx) => (
+                        <motion.li
+                          key={b.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: idx * 0.05 }}
+                        >
+                          <Card className="border-white/10 bg-black/40 backdrop-blur-xl p-4">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <p className="font-semibold text-white">
+                                  {b.room?.name} · {b.user?.email ?? "Guest"}
+                                </p>
+                                <p className="mt-1 font-mono text-xs text-white/50">
+                                  {b.id}
+                                </p>
+                              </div>
+                              {!b.checkedInAt && !b.checkedOutAt && (
+                                <Badge variant="muted" className="bg-gold-400/20 text-gold-400">
+                                  Pending
+                                </Badge>
+                              )}
+                              {b.checkedInAt && !b.checkedOutAt && (
+                                <Badge variant="secondary" className="bg-gold-400/20 text-gold-400">
+                                  In house
+                                </Badge>
+                              )}
+                              {b.checkedOutAt && (
+                                <Badge variant="muted" className="bg-white/10 text-white/50">
+                                  Completed
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {!b.checkedInAt ? (
+                                <Button
+                                  className="!px-3 !py-1.5 !text-xs border-white/20 text-white hover:border-gold-400 hover:text-gold-400"
+                                  variant="outline"
+                                  onClick={() => void checkIn(b.id)}
+                                >
+                                  Check in
+                                </Button>
+                              ) : !b.checkedOutAt ? (
+                                <Button
+                                  variant="secondary"
+                                  className="!px-3 !py-1.5 !text-xs border-white/20 text-white hover:border-gold-400 hover:text-gold-400"
+                                  onClick={() => void checkOut(b.id)}
+                                >
+                                  Check out
+                                </Button>
+                              ) : null}
+                            </div>
+                          </Card>
+                        </motion.li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+
+                {/* Add Room Section */}
+                <section>
+                  <h2 className="text-lg font-semibold text-white">Add room</h2>
+                  <Card className="mt-4 border-white/10 bg-black/40 backdrop-blur-xl">
+                    <form onSubmit={createRoom} className="flex flex-col gap-4 p-5">
+                      <Input
+                        label="Name"
+                        value={roomName}
+                        onChange={(e) => setRoomName(e.target.value)}
+                        required
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/30"
+                      />
+                      <Input
+                        label="Price / night (whole number)"
+                        type="number"
+                        min={1}
+                        value={roomPrice}
+                        onChange={(e) => setRoomPrice(e.target.value)}
+                        required
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/30"
+                      />
+                      <Input
+                        label="Description (optional)"
+                        value={roomDesc}
+                        onChange={(e) => setRoomDesc(e.target.value)}
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/30"
+                      />
+                      <Button
+                        type="submit"
+                        disabled={creating}
+                        className="bg-gold-400/20 text-gold-400 hover:bg-gold-400/30 border border-gold-400/30"
+                      >
+                        {creating ? (
+                          <>
+                            <Spinner className="mr-2 h-3 w-3" />
+                            Creating…
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="mr-2 h-3 w-3" />
+                            Create room
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </Card>
+                </section>
+              </div>
+
+              {/* Pending Service Requests */}
+              <section className="mt-14">
+                <h2 className="text-lg font-semibold text-white">Pending service requests</h2>
+                {dash.pendingServiceRequests.length === 0 ? (
+                  <p className="mt-4 text-sm text-white/60">None right now.</p>
                 ) : (
                   <ul className="mt-4 space-y-3">
-                    {dash.activeBookings.map((b) => (
-                      <li key={b.id}>
-                        <Card className="p-4">
-                          <p className="font-semibold text-foreground">
-                            {b.room?.name} · {b.user?.email ?? "Guest"}
-                          </p>
-                          <p className="mt-1 font-mono text-xs text-muted">
-                            {b.id}
-                          </p>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {!b.checkedInAt ? (
-                              <Button
-                                className="!px-3 !py-1.5 !text-xs"
-                                onClick={() => void checkIn(b.id)}
-                              >
-                                Check in
-                              </Button>
-                            ) : !b.checkedOutAt ? (
-                              <Button
-                                variant="secondary"
-                                className="!px-3 !py-1.5 !text-xs"
-                                onClick={() => void checkOut(b.id)}
-                              >
-                                Check out
-                              </Button>
-                            ) : (
-                              <Badge variant="muted">Completed</Badge>
-                            )}
-                          </div>
-                        </Card>
-                      </li>
+                    {dash.pendingServiceRequests.map((sr, idx) => (
+                      <motion.li
+                        key={sr.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                      >
+                        <AdminRequestRow
+                          sr={sr}
+                          onStatus={(s) => void setStatus(sr.id, s)}
+                        />
+                      </motion.li>
                     ))}
                   </ul>
                 )}
               </section>
 
-              <section>
-                <h2 className="text-lg font-semibold text-foreground">Add room</h2>
-                <Card className="mt-4">
-                  <form onSubmit={createRoom} className="flex flex-col gap-4">
-                    <Input
-                      label="Name"
-                      value={roomName}
-                      onChange={(e) => setRoomName(e.target.value)}
-                      required
-                    />
-                    <Input
-                      label="Price / night (whole number)"
-                      type="number"
-                      min={1}
-                      value={roomPrice}
-                      onChange={(e) => setRoomPrice(e.target.value)}
-                      required
-                    />
-                    <Input
-                      label="Description (optional)"
-                      value={roomDesc}
-                      onChange={(e) => setRoomDesc(e.target.value)}
-                    />
-                    <Button type="submit" disabled={creating}>
-                      {creating ? "Creating…" : "Create room"}
-                    </Button>
-                  </form>
-                </Card>
-              </section>
-            </div>
-
-            <section className="mt-14">
-              <h2 className="text-lg font-semibold text-foreground">
-                Pending service requests
-              </h2>
-              {dash.pendingServiceRequests.length === 0 ? (
-                <p className="mt-4 text-sm text-muted">None right now.</p>
-              ) : (
-                <ul className="mt-4 space-y-3">
-                  {dash.pendingServiceRequests.map((sr) => (
-                    <li key={sr.id}>
-                      <AdminRequestRow
-                        sr={sr}
-                        onStatus={(s) => void setStatus(sr.id, s)}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-
-            <section className="mt-14">
-              <h2 className="text-lg font-semibold text-foreground">
-                All service requests
-              </h2>
-              {allRequests === null ? (
-                <Spinner className="mt-8" />
-              ) : allRequests.length === 0 ? (
-                <div className="mt-4">
-                  <EmptyState title="No requests" />
-                </div>
-              ) : (
-                <TableWrap>
-                  <table className="w-full min-w-[720px] text-left text-sm">
-                    <thead className="border-b border-border bg-surface-2/50">
-                      <tr>
-                        <th className="px-4 py-3 font-semibold">Guest</th>
-                        <th className="px-4 py-3 font-semibold">Room</th>
-                        <th className="px-4 py-3 font-semibold">Message</th>
-                        <th className="px-4 py-3 font-semibold">Status</th>
-                        <th className="px-4 py-3 font-semibold">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allRequests.map((sr) => (
-                        <tr
-                          key={sr.id}
-                          className="border-t border-border/80 hover:bg-surface-2/20"
-                        >
-                          <td className="px-4 py-3">{sr.user?.email ?? "—"}</td>
-                          <td className="px-4 py-3">{sr.room?.name}</td>
-                          <td className="max-w-xs truncate px-4 py-3 text-muted">
-                            {sr.message}
-                          </td>
-                          <td className="px-4 py-3">
-                            <Badge variant="muted">{sr.status}</Badge>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex flex-wrap gap-1">
-                              {(["PENDING", "IN_PROGRESS", "COMPLETED"] as const).map(
-                                (s) => (
-                                  <Button
-                                    key={s}
-                                    variant={sr.status === s ? "primary" : "ghost"}
-                                    className="!px-2 !py-1 !text-xs"
-                                    onClick={() => void setStatus(sr.id, s)}
-                                  >
-                                    {s.slice(0, 4)}
-                                  </Button>
-                                ),
-                              )}
-                            </div>
-                          </td>
+              {/* All Service Requests Table */}
+              <section className="mt-14">
+                <h2 className="text-lg font-semibold text-white">All service requests</h2>
+                {allRequests === null ? (
+                  <Spinner className="mt-8" />
+                ) : allRequests.length === 0 ? (
+                  <div className="mt-4">
+                    <EmptyState title="No requests" />
+                  </div>
+                ) : (
+                  <TableWrap>
+                    <table className="w-full min-w-[720px] text-left text-sm">
+                      <thead className="sticky top-0 border-b border-white/10 bg-black/80 backdrop-blur-sm">
+                        <tr>
+                          <th className="px-4 py-3 font-semibold text-gold-400">Guest</th>
+                          <th className="px-4 py-3 font-semibold text-gold-400">Room</th>
+                          <th className="px-4 py-3 font-semibold text-gold-400">Message</th>
+                          <th className="px-4 py-3 font-semibold text-gold-400">Status</th>
+                          <th className="px-4 py-3 font-semibold text-gold-400">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </TableWrap>
-              )}
-            </section>
-          </>
-        )}
+                      </thead>
+                      <tbody>
+                        {allRequests.map((sr) => (
+                          <tr
+                            key={sr.id}
+                            className="border-t border-white/5 hover:bg-white/5 transition-colors"
+                          >
+                            <td className="px-4 py-3 text-white/80">{sr.user?.email ?? "—"}</td>
+                            <td className="px-4 py-3 text-white/80">{sr.room?.name}</td>
+                            <td className="max-w-xs truncate px-4 py-3 text-white/60">
+                              {sr.message}
+                            </td>
+                            <td className="px-4 py-3">
+                              <Badge variant="muted" className="bg-white/10 text-white/60">
+                                {sr.status}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex flex-wrap gap-1">
+                                {(["PENDING", "IN_PROGRESS", "COMPLETED"] as const).map(
+                                  (s) => (
+                                    <Button
+                                      key={s}
+                                      variant={sr.status === s ? "primary" : "ghost"}
+                                      className={`!px-2 !py-1 !text-xs ${
+                                        sr.status === s
+                                          ? "bg-gold-400/20 text-gold-400"
+                                          : "text-white/60 hover:text-white"
+                                      }`}
+                                      onClick={() => void setStatus(sr.id, s)}
+                                    >
+                                      {s.slice(0, 4)}
+                                    </Button>
+                                  ),
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </TableWrap>
+                )}
+              </section>
+            </>
+          )}
+        </div>
       </div>
     </RequireAuth>
   );
@@ -324,21 +386,29 @@ function AdminRequestRow({
   onStatus: (s: ServiceRequestStatus) => void;
 }) {
   return (
-    <Card className="p-4">
-      <p className="text-sm font-semibold text-foreground">{sr.user?.email}</p>
-      <p className="text-sm text-muted">{sr.room?.name}</p>
-      <p className="mt-2 text-sm leading-relaxed text-foreground/90">
-        {sr.message}
-      </p>
+    <Card className="border-white/10 bg-black/40 backdrop-blur-xl p-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <p className="text-sm font-semibold text-white">{sr.user?.email}</p>
+          <p className="text-sm text-white/60">{sr.room?.name}</p>
+        </div>
+        <Badge variant="muted" className="bg-gold-400/20 text-gold-400">
+          {sr.status}
+        </Badge>
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-white/80">{sr.message}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
           variant="secondary"
-          className="!text-xs"
+          className="!text-xs border-white/20 text-white hover:border-gold-400 hover:text-gold-400"
           onClick={() => onStatus("IN_PROGRESS")}
         >
           In progress
         </Button>
-        <Button className="!text-xs" onClick={() => onStatus("COMPLETED")}>
+        <Button
+          className="!text-xs bg-gold-400/20 text-gold-400 hover:bg-gold-400/30 border border-gold-400/30"
+          onClick={() => onStatus("COMPLETED")}
+        >
           Complete
         </Button>
       </div>

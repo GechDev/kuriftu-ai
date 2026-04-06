@@ -48,9 +48,22 @@ export function ServiceComparisonCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
 
-  const priceDifference = service.aiSuggestedPrice - service.publishedPrice;
-  const priceChangePercent = ((priceDifference / service.publishedPrice) * 100).toFixed(1);
+  const safePublishedPrice = Number.isFinite(service.publishedPrice) ? service.publishedPrice : 0;
+  const safeBasePrice = Number.isFinite(service.basePrice) ? service.basePrice : 0;
+  const safeAiPrice = Number.isFinite(service.aiSuggestedPrice) ? service.aiSuggestedPrice : 0;
+  const priceDifference = safeAiPrice - safePublishedPrice;
+  const priceChangePercentValue = safePublishedPrice > 0 ? (priceDifference / safePublishedPrice) * 100 : 0;
   const isPriceIncrease = priceDifference > 0;
+
+  const formatCurrency = (value: number) => {
+    const rounded = Math.round((value + Number.EPSILON) * 100) / 100;
+    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2);
+  };
+
+  const formatPercent = (value: number) => {
+    const rounded = Math.round((value + Number.EPSILON) * 10) / 10;
+    return `${rounded > 0 ? "+" : ""}${rounded.toFixed(1)}%`;
+  };
 
   const handleConfirmPrice = async () => {
     setIsConfirming(true);
@@ -85,9 +98,13 @@ export function ServiceComparisonCard({
       transition={{ duration: 0.3 }}
       className="w-full"
     >
-      <Card className={`overflow-hidden ${isConfirmed ? 'ring-2 ring-green-500 ring-opacity-50' : ''}`}>
+      <Card
+        className={`overflow-hidden rounded-2xl border-border/80 bg-card/95 p-0 shadow-[0_16px_40px_-24px_rgba(15,23,42,0.25)] ${
+          isConfirmed ? "ring-2 ring-green-500/45" : ""
+        }`}
+      >
         {/* Header */}
-        <div className="relative h-32 overflow-hidden">
+        <div className="relative h-36 overflow-hidden">
           {service.image && (
             <SafeImage
               src={typeof service.image === "string" ? service.image : "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80"}
@@ -97,11 +114,11 @@ export function ServiceComparisonCard({
               sizes="(max-width:768px) 100vw, 400px"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/28 to-transparent" />
           
           {/* Status Badge */}
           <div className="absolute top-3 left-3">
-            <Badge className={`px-3 py-1 ${getDemandColor(service.demandLevel)}`}>
+              <Badge className={`px-3 py-1 text-[11px] ${getDemandColor(service.demandLevel)}`}>
               {service.demandLevel} Demand
             </Badge>
           </div>
@@ -117,33 +134,35 @@ export function ServiceComparisonCard({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-5 sm:p-6">
           {/* Service Info */}
           <div className="mb-4">
-            <h3 className="text-xl font-bold text-foreground mb-1">{service.name}</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-1 sm:text-xl">{service.name}</h3>
             <p className="text-sm text-muted-foreground">{service.category}</p>
           </div>
 
           {/* Price Comparison */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
             {/* Current Price */}
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="rounded-xl border border-border/80 bg-gray-50 p-3 text-center">
               <p className="text-xs text-muted-foreground mb-1">Current Price</p>
-              <p className="text-lg font-bold text-gray-700">${service.publishedPrice}</p>
+              <p className="text-lg font-bold text-gray-700">${formatCurrency(safePublishedPrice)}</p>
             </div>
 
             {/* AI Suggested */}
-            <div className="text-center p-3 bg-blue-50 rounded-lg border-2 border-blue-200">
+            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-3 text-center">
               <div className="flex items-center justify-center mb-1">
                 <Sparkles className="w-4 h-4 text-blue-600 mr-1" />
                 <p className="text-xs text-blue-600">AI Suggested</p>
               </div>
-              <p className="text-lg font-bold text-blue-700">${service.aiSuggestedPrice}</p>
+              <p className="text-lg font-bold text-blue-700">${formatCurrency(safeAiPrice)}</p>
               <p className="text-xs text-blue-600">({service.confidence}% confidence)</p>
             </div>
 
             {/* Price Change */}
-            <div className={`text-center p-3 rounded-lg ${isPriceIncrease ? 'bg-green-50' : 'bg-red-50'}`}>
+            <div
+              className={`rounded-xl border p-3 text-center ${isPriceIncrease ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
+            >
               <div className="flex items-center justify-center mb-1">
                 {isPriceIncrease ? (
                   <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
@@ -154,11 +173,11 @@ export function ServiceComparisonCard({
                   {isPriceIncrease ? 'Increase' : 'Decrease'}
                 </p>
               </div>
-              <p className={`text-lg font-bold ${isPriceIncrease ? 'text-green-700' : 'text-red-700'}`}>
-                {isPriceIncrease ? '+' : ''}{priceChangePercent}%
+              <p className={`text-lg font-bold ${isPriceIncrease ? "text-green-700" : "text-red-700"}`}>
+                {formatPercent(priceChangePercentValue)}
               </p>
-              <p className={`text-xs ${isPriceIncrease ? 'text-green-600' : 'text-red-600'}`}>
-                ${Math.abs(priceDifference)}
+              <p className={`text-xs ${isPriceIncrease ? "text-green-600" : "text-red-600"}`}>
+                ${formatCurrency(Math.abs(priceDifference))}
               </p>
             </div>
           </div>
@@ -268,13 +287,15 @@ export function ServiceComparisonCard({
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">Current Margin</span>
                       <span className="font-medium">
-                        {((service.publishedPrice - service.basePrice) / service.basePrice * 100).toFixed(1)}%
+                        {safeBasePrice > 0
+                          ? formatPercent(((safePublishedPrice - safeBasePrice) / safeBasePrice) * 100)
+                          : "0.0%"}
                       </span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">AI Margin</span>
                       <span className="font-medium">
-                        {((service.aiSuggestedPrice - service.basePrice) / service.basePrice * 100).toFixed(1)}%
+                        {safeBasePrice > 0 ? formatPercent(((safeAiPrice - safeBasePrice) / safeBasePrice) * 100) : "0.0%"}
                       </span>
                     </div>
                   </div>
@@ -286,7 +307,7 @@ export function ServiceComparisonCard({
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">Competitor Avg</span>
                       <span className="font-medium">
-                        ${(service.aiSuggestedPrice * 0.95).toFixed(0)}
+                        ${formatCurrency(safeAiPrice * 0.95)}
                       </span>
                     </div>
                     <div className="flex justify-between text-xs">

@@ -144,7 +144,7 @@ export function RequestsContent() {
         ) : null}
 
         <div className="mt-10 grid gap-8 lg:grid-cols-5 lg:gap-10">
-          <Card className="lg:col-span-2">
+          <Card className="reveal lg:col-span-2">
             <h2 className="text-sm font-semibold text-foreground">New request</h2>
             <p className="mt-1 text-sm text-muted">
               Choose a room and optional stay. Your message is sent as-is to operations.
@@ -248,7 +248,7 @@ export function RequestsContent() {
                       <Link href={`/requests/${sr.id}`}>
                         <Card
                           hover
-                          className={`p-5 transition ${
+                          className={`reveal p-5 transition ${
                             linked ? "ring-2 ring-accent/35" : ""
                           }`}
                         >

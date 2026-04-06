@@ -9,7 +9,10 @@ export function Spinner({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "h-9 w-9 animate-spin rounded-full border-2 border-border border-t-accent",
+        "h-9 w-9 animate-spin rounded-full border-2 border-t-accent",
+        className?.includes("text-white") 
+          ? "border-white/30 border-t-gold-400" 
+          : "border-border border-t-accent",
         className
       )}
       aria-label="Loading"
@@ -30,24 +33,32 @@ export function PageHeader({
   action?: React.ReactNode;
   className?: string;
 }) {
+  const isDark = className?.includes("text-white");
+  
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 border-b border-border/80 pb-8 sm:flex-row sm:items-end sm:justify-between",
+        "flex flex-col gap-3 border-b border-white/10 pb-8 sm:flex-row sm:items-end sm:justify-between",
         className
       )}
     >
       <div className="max-w-2xl space-y-2">
         {eyebrow ? (
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${
+            isDark ? "text-gold-400" : "text-muted"
+          }`}>
             {eyebrow}
           </p>
         ) : null}
-        <h1 className="font-display text-[2rem] font-semibold tracking-tight text-foreground sm:text-[2.5rem]">
+        <h1 className={`font-display text-[2rem] font-semibold tracking-tight ${
+          isDark ? "text-white" : "text-foreground"
+        } sm:text-[2.5rem]`}>
           {title}
         </h1>
         {description ? (
-          <p className="max-w-xl text-[15px] leading-relaxed text-muted">{description}</p>
+          <p className={`max-w-xl text-[15px] leading-relaxed ${
+            isDark ? "text-white/70" : "text-muted"
+          }`}>{description}</p>
         ) : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
@@ -64,12 +75,16 @@ export function Card({
   className?: string;
   hover?: boolean;
 }) {
+  const isDark = className?.includes("bg-black") || className?.includes("border-white");
+  
   return (
     <div
       className={cn(
-        "rounded-sm border border-border bg-white p-6 shadow-[var(--shadow-card)]",
-        hover &&
-          "transition duration-200 ease-out hover:border-border hover:shadow-[var(--shadow-card-hover)]",
+        "rounded-sm p-6 shadow-xl transition-all duration-300",
+        isDark 
+          ? "border border-white/10 bg-black/40 backdrop-blur-xl hover:border-gold-400/30 hover:shadow-2xl"
+          : "border border-border bg-white shadow-[var(--shadow-card)] hover:border-border hover:shadow-[var(--shadow-card-hover)]",
+        hover && "duration-200 ease-out",
         className
       )}
     >
@@ -193,12 +208,16 @@ export function Input(
 ) {
   const { label, className, id, ...rest } = props;
   const inputId = id ?? rest.name;
+  const isDark = className?.includes("text-white");
+  
   return (
     <div className="flex flex-col gap-1.5">
       {label ? (
         <label
           htmlFor={inputId}
-          className="text-sm font-medium text-foreground/90"
+          className={`text-sm font-medium ${
+            isDark ? "text-white/80" : "text-foreground/90"
+          }`}
         >
           {label}
         </label>
@@ -206,8 +225,11 @@ export function Input(
       <input
         id={inputId}
         className={cn(
-          "rounded-sm border border-border bg-white px-3.5 py-2.5 text-sm text-foreground shadow-inner shadow-black/[0.04] outline-none transition",
-          "placeholder:text-muted/70 focus:border-accent focus:ring-2 focus:ring-accent/25",
+          "rounded-sm border px-3.5 py-2.5 text-sm shadow-inner shadow-black/[0.04] outline-none transition",
+          "placeholder:text-muted/70 focus:ring-2 focus:ring-accent/25",
+          isDark 
+            ? "border-white/20 bg-black/50 text-white placeholder:text-white/30 focus:border-gold-400 focus:ring-gold-400/25"
+            : "border-border bg-white text-foreground focus:border-accent",
           className
         )}
         {...rest}
@@ -311,10 +333,10 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-sm border border-dashed border-border bg-surface-2/50 py-16 text-center">
-      <p className="text-lg font-semibold text-foreground">{title}</p>
+    <div className="flex flex-col items-center justify-center rounded-sm border border-dashed border-white/20 bg-black/30 py-16 text-center">
+      <p className="text-lg font-semibold text-white">{title}</p>
       {description ? (
-        <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">
+        <p className="mt-2 max-w-sm text-sm leading-relaxed text-white/60">
           {description}
         </p>
       ) : null}

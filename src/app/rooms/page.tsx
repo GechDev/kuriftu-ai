@@ -3,12 +3,22 @@
 import { Badge, Card, EmptyState, PageHeader, Spinner } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import type { Room } from "@/lib/types";
+import { resortImages } from "@/lib/resortImages";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const roomImages = [
+    resortImages.penthouseSuite,
+    resortImages.suite,
+    resortImages.familySuite,
+    resortImages.minimalSuite,
+    resortImages.lakeVilla,
+    resortImages.villa,
+  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -78,32 +88,65 @@ export default function RoomsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
-      <PageHeader
-        eyebrow="Stays"
-        title="Rooms & suites"
-        description="Each card opens availability, calendar, and booking for that space."
-      />
+    <div className="pb-14">
+      <section className="reveal relative min-h-[40vh] overflow-hidden">
+        <Image
+          src={resortImages.roomsHero}
+          alt="Luxury suite interior hero"
+          fill
+          className="hero-zoom object-cover object-center"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a1128]/78 via-[#0a1128]/42 to-black/32" aria-hidden />
+        <div
+          className="absolute inset-0 bg-[radial-gradient(ellipse_85%_55%_at_78%_15%,rgba(212,175,55,0.18),transparent_60%)]"
+          aria-hidden
+        />
+        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6">
+          <PageHeader
+            eyebrow="Stays"
+            title="Rooms & suites"
+            description="Each card opens availability, calendar, and booking for that space."
+            className="text-white [&_p]:text-white/85"
+          />
+        </div>
+      </section>
 
-      <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
+
+      <ul className="mt-2 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {rooms.map((room, index) => (
-          <li key={room.id} className="animate-fade-up" style={{ animationDelay: `${index * 0.05}s` }}>
+          <li key={room.id} className="animate-fade-up reveal" style={{ animationDelay: `${index * 0.05}s` }}>
             <Link href={`/rooms/${room.id}`} className="block h-full">
-              <Card hover className="flex h-full flex-col overflow-hidden p-0">
-                <div className="relative h-36 bg-gradient-to-br from-surface-2 via-accent-muted/35 to-white">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(19,78,74,0.12),transparent_55%)]" />
+              <Card hover className="tilt-card flex h-full flex-col overflow-hidden p-0">
+                <div className="relative h-48 overflow-hidden">
+                  <Image
+                    src={roomImages[index % roomImages.length]}
+                    alt={room.name}
+                    fill
+                    className="card-zoom object-cover"
+                    sizes="(max-width:1024px) 100vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" aria-hidden />
+                  <div className="absolute right-4 top-4">
+                    <span className="float-luxury rounded-full border border-white/25 bg-white/14 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-md">
+                      AI recommended
+                    </span>
+                  </div>
                   <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-2">
                     <div className="min-w-0">
-                      <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                      <h2 className="text-lg font-semibold tracking-tight text-white">
                         {room.name}
                       </h2>
                       {room.resort ? (
-                        <p className="mt-1 truncate text-xs font-medium text-muted">
+                        <p className="mt-1 truncate text-xs font-medium text-white/75">
                           {room.resort.name}
                         </p>
                       ) : null}
                     </div>
-                    <Badge variant="accent">${room.pricePerNight}/nt</Badge>
+                    <Badge variant="accent" className="!bg-[#D4AF37] !text-[#1b1408]">
+                      ${room.pricePerNight}/nt
+                    </Badge>
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col p-5">
@@ -124,6 +167,7 @@ export default function RoomsPage() {
           </li>
         ))}
       </ul>
+      </div>
     </div>
   );
 }

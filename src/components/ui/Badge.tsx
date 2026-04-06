@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 
 const tones: Record<string, string> = {
-  default: "bg-primary/10 text-primary",
-  accent: "bg-accent/10 text-accent",
-  secondary: "bg-secondary/20 text-primary",
-  warn: "bg-amber-100 text-amber-900",
-  surge: "bg-accent/15 text-accent",
+  default: "bg-white/10 text-white",
+  accent: "bg-gold-400/20 text-gold-400",
+  secondary: "bg-white/5 text-white/70",
+  warn: "bg-amber-500/20 text-amber-400",
+  surge: "bg-gold-400/15 text-gold-400",
 };
 
 export function Badge({

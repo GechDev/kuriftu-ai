@@ -115,7 +115,7 @@ export default function BookingsPage() {
                 >
                   <Card
                     hover
-                    className="group relative overflow-hidden p-0 transition"
+                    className="group relative overflow-hidden p-0 transition reveal"
                   >
                     <Link
                       href={`/bookings/${b.id}`}
@@ -159,7 +159,12 @@ export default function BookingsPage() {
                         </div>
                       </div>
                       <div className="flex shrink-0 flex-col items-start gap-4 sm:items-end">
-                        <Badge variant={badge.variant}>{badge.label}</Badge>
+                        <Badge
+                          variant={badge.variant}
+                          className={badge.label === "Confirmed" ? "pulse-glow" : ""}
+                        >
+                          {badge.label}
+                        </Badge>
                         <div className="text-right">
                           <p className="text-xs font-medium text-muted">Total</p>
                           <p className="text-2xl font-semibold tracking-tight text-foreground">

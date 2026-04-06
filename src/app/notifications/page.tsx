@@ -94,7 +94,7 @@ export default function NotificationsPage() {
         ) : (
           <ul className="mt-10 space-y-4">
             {items.map((n) => (
-              <li key={n.id}>
+              <li key={n.id} className="reveal">
                 <Card
                   hover
                   className={
@@ -105,7 +105,7 @@ export default function NotificationsPage() {
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <h2 className="font-semibold text-foreground">{n.title}</h2>
-                    {!n.read ? <Badge variant="accent">New</Badge> : null}
+                    {!n.read ? <Badge variant="accent" className="pulse-glow">New</Badge> : null}
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-muted">
                     {n.body}
