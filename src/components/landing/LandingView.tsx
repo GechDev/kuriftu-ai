@@ -101,7 +101,7 @@ const FloatingParticles = () => {
 // 3D Tilt Card Component
 const TiltCard = ({ children, className }: { children: React.ReactNode; className?: string }) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const { rotateX, rotateY, handleMouseMove, handleMouseLeave } = useTilt(cardRef);
+  const { rotateX, rotateY, handleMouseMove, handleMouseLeave } = useTilt(cardRef as React.RefObject<HTMLElement>);
 
   return (
     <motion.div
