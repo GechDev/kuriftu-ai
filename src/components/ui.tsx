@@ -347,9 +347,16 @@ export function EmptyState({
   );
 }
 
-export function TableWrap({ children }: { children: React.ReactNode }) {
+export function TableWrap({ children, className }: { children: React.ReactNode, className?: string }) {
+  const isDark = className?.includes("border-white") || className?.includes("bg-black") || className?.includes("text-white");
   return (
-    <div className="overflow-hidden rounded-sm border border-border bg-white shadow-sm">
+    <div className={cn(
+      "overflow-hidden rounded-sm border shadow-sm",
+      isDark 
+        ? "border-white/10 bg-black/40 backdrop-blur-xl" 
+        : "border-border bg-white",
+      className
+    )}>
       <div className="overflow-x-auto">{children}</div>
     </div>
   );

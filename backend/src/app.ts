@@ -1,6 +1,7 @@
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { buildCorsOptions } from "./lib/cors-options.js";
+import { prisma } from "./lib/prisma.js";
 import { adminRouter } from "./routes/admin.js";
 import { authRouter } from "./routes/auth.js";
 import { bookingsRouter } from "./routes/bookings.js";
@@ -12,6 +13,7 @@ import { serviceRequestsRouter } from "./routes/serviceRequests.js";
 import { publicCatalogRouter } from "./routes/public-catalog.js";
 import { pricingAdminRouter } from "./routes/pricing-admin.js";
 import { seedRouter } from "./routes/seed.js";
+import livekitRouter from "./routes/livekit.js";
 
 export function createApp() {
   const app = express();
@@ -52,9 +54,32 @@ export function createApp() {
     }
   );
 
-  app.get("/health", (_req, res) => {
-    res.json({ ok: true });
-  });
+  app.get("/health", async (_req, res) => {
+  try {
+    // Check database connection
+    await prisma.$queryRaw`SELECT 1`;
+    
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
+      database: 'connected',
+      memory: {
+        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 100) / 100,
+        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024 * 100) / 100
+      }
+    });
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(500).json({ 
+      status: 'unhealthy', 
+      timestamp: new Date().toISOString(),
+      error: error instanceof Error ? error.message : 'Unknown error',
+      database: 'disconnected'
+    });
+  }
+});
 
   app.use("/api/auth", authRouter);
   app.use("/api/public", publicCatalogRouter);
@@ -67,6 +92,7 @@ export function createApp() {
   app.use("/api/service-requests", serviceRequestsRouter);
   app.use("/api/notifications", notificationsRouter);
   app.use("/api/admin", adminRouter);
+  app.use("/api/livekit", livekitRouter);
 
   app.use((_req, res) => {
     res.status(404).json({ error: "Not found" });

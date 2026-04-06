@@ -14,6 +14,11 @@ import {
   Loader2,
   RefreshCw,
   MapPin,
+  CheckCircle,
+  Wifi,
+  Coffee,
+  Bath,
+  Utensils,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -26,6 +31,16 @@ const RESORT_SLUG = "kuriftu-lakeside";
 
 function categoryLabel(cat: string): string {
   return cat.charAt(0).toUpperCase() + cat.slice(1).replace(/_/g, " ");
+}
+
+function getCategoryIcon(category: string): React.ReactNode {
+  const icons: Record<string, React.ReactNode> = {
+    spa: <Sparkles className="h-4 w-4" />,
+    dining: <Utensils className="h-4 w-4" />,
+    wellness: <Bath className="h-4 w-4" />,
+    activities: <Coffee className="h-4 w-4" />,
+  };
+  return icons[category.toLowerCase()] || <Wifi className="h-4 w-4" />;
 }
 
 function buildModalService(s: PublicCatalogService) {
@@ -117,53 +132,57 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <section className="reveal relative overflow-hidden h-96">
-        {/* Hero Image - Direct CSS Background */}
-        <div 
-          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${resortImages.hero})` }}
+    <div className="min-h-screen bg-gradient-to-b from-black via-[#0a1210] to-[#0a1210]">
+      {/* Hero Section - Cinematic with dark overlay */}
+      <section className="relative min-h-[40vh] overflow-hidden">
+        <motion.div
+          className="absolute inset-0"
+          animate={{ scale: [1, 1.06, 1] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
         >
-          {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
-        </div>
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${resortImages.hero})` }}
+          />
+        </motion.div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_70%_20%,rgba(212,175,55,0.08),transparent_60%)]" />
         
-        {/* Content positioned over image */}
-        <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 h-full flex items-center">
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 min-h-[40vh] flex items-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="text-center"
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center max-w-4xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-3 py-1.5 mb-6 text-[10px] font-medium text-white">
+            <div className="inline-flex items-center gap-2 rounded-full border border-gold-400/30 bg-gold-400/10 backdrop-blur-sm px-3 py-1.5 mb-3 text-[10px] font-medium text-gold-400">
               <Sparkles className="h-3 w-3" />
               Premium Experiences
             </div>
             
-            <h1 className="font-display text-5xl font-light tracking-tight text-white sm:text-6xl lg:text-7xl">
+            <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
               Resort Services
-              <span className="block text-2xl font-light text-white/90 sm:text-3xl lg:text-4xl">
+              <span className="block text-xl font-light text-white/80 sm:text-2xl lg:text-3xl mt-2">
                 & Experiences
               </span>
             </h1>
             
-            <p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-white/80 sm:text-xl">
+            <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
               Discover our curated collection of luxury experiences, from signature spa treatments 
               to exclusive dining. Each service is thoughtfully designed and priced 
               using our intelligent optimization system.
             </p>
             
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <div className="flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-sm text-white border border-white/30 shadow-sm">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+              <div className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-4 py-2 text-sm text-white">
                 <div className="h-2 w-2 rounded-full bg-green-400" />
                 Live pricing
               </div>
-              <div className="flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-sm text-white border border-white/30 shadow-sm">
+              <div className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-4 py-2 text-sm text-white">
                 <MapPin className="h-3.5 w-3.5" />
                 On-property
               </div>
-              <div className="flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-sm text-white border border-white/30 shadow-sm">
+              <div className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-4 py-2 text-sm text-white">
                 <Star className="h-3.5 w-3.5" />
                 AI optimized
               </div>
@@ -172,40 +191,40 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="sticky top-0 z-40 border-b border-border/10 bg-white/95 backdrop-blur-xl shadow-sm">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-4 py-4 sm:px-6 lg:px-8">
+      {/* Sticky Filter Bar */}
+      <div className="sticky top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur-xl shadow-lg">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-2">
             {categories.map((category) => (
-              <Button
+              <button
                 key={category}
-                variant={selectedCategory === category ? "primary" : "ghost"}
                 onClick={() => setSelectedCategory(category)}
-                className={`!rounded-full !px-4 !py-2 !text-xs font-medium transition-all duration-200 ${
+                className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
                   selectedCategory === category 
-                    ? "shadow-lg shadow-accent/25 ring-2 ring-accent/20" 
-                    : "hover:bg-accent/5 border border-border/20"
+                    ? "bg-gold-400/20 text-gold-400 ring-1 ring-gold-400/50"
+                    : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 {category}
-              </Button>
+              </button>
             ))}
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => void load()}
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-full bg-white border border-border/20 px-4 py-2 text-xs font-medium text-foreground hover:bg-accent/5 hover:border-accent/30 disabled:opacity-50 transition-all duration-200 shadow-sm"
+              className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-50 transition-all duration-200"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </button>
             
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="rounded-full border border-border/20 bg-white/80 px-4 py-2 text-xs font-medium text-foreground backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent/40 transition-all duration-200"
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80 focus:outline-none focus:ring-1 focus:ring-gold-400/50 cursor-pointer"
             >
               <option value="Featured">Featured</option>
               <option value="Price: Low to High">Price: Low to High</option>
@@ -213,49 +232,65 @@ export default function PricingPage() {
               <option value="Name">Name</option>
             </select>
             
-            <div className="flex items-center rounded-full bg-white/80 border border-border/20 p-0.5 backdrop-blur-sm">
-              <Button
-                variant={viewMode === "grid" ? "primary" : "ghost"}
+            <div className="flex items-center rounded-full border border-white/10 bg-white/5 p-0.5">
+              <button
                 onClick={() => setViewMode("grid")}
-                className="!p-2 !rounded-full"
+                className={`p-1.5 rounded-full transition-all duration-200 ${
+                  viewMode === "grid" ? "bg-gold-400/20 text-gold-400" : "text-white/50 hover:text-white"
+                }`}
               >
-                <Grid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "primary" : "ghost"}
+                <Grid className="h-3.5 w-3.5" />
+              </button>
+              <button
                 onClick={() => setViewMode("list")}
-                className="!p-2 !rounded-full"
+                className={`p-1.5 rounded-full transition-all duration-200 ${
+                  viewMode === "list" ? "bg-gold-400/20 text-gold-400" : "text-white/50 hover:text-white"
+                }`}
               >
-                <List className="h-4 w-4" />
-              </Button>
+                <List className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section className="reveal mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      {/* Services Grid */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {loading && services.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted">
-            <Loader2 className="h-8 w-8 animate-spin text-accent" aria-hidden />
-            <p className="text-sm">Loading services…</p>
+          <div className="flex flex-col items-center justify-center gap-3 py-24">
+            <Loader2 className="h-8 w-8 animate-spin text-gold-400" />
+            <p className="text-sm text-white/60">Loading services…</p>
           </div>
         ) : null}
-        {error ? (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+
+        {error && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
             {error} Start the API on port 4000 and run{" "}
-            <code className="rounded bg-white px-1">npm run db:seed</code> in{" "}
-            <code className="rounded bg-white px-1">kuriftu-ai/backend</code>.
+            <code className="rounded bg-black/30 px-1">npm run db:seed</code> in{" "}
+            <code className="rounded bg-black/30 px-1">kuriftu-ai/backend</code>.
           </div>
-        ) : null}
+        )}
+
+        {!loading && !error && sortedServices.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-white/60">No services found in this category.</p>
+          </div>
+        )}
 
         <div
-          className={`grid gap-8 ${
-            viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
+          className={`grid gap-6 ${
+            viewMode === "grid" 
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+              : "grid-cols-1"
           }`}
         >
           {sortedServices.map((service, index) => {
             const img = service.imageUrl ?? resortImages.spa;
             const showStrike = service.basePrice > service.publishedPrice + 0.01;
+            const discount = showStrike
+              ? Math.round(((service.basePrice - service.publishedPrice) / service.basePrice) * 100)
+              : 0;
+            
             return (
               <motion.div
                 key={service.id}
@@ -263,92 +298,111 @@ export default function PricingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
                 whileHover={{ y: -4 }}
-                className="group reveal"
+                className="group"
               >
-                <Card className="tilt-card h-full overflow-hidden border-0 bg-white shadow-lg shadow-black/[0.04] hover:shadow-2xl hover:shadow-black/[0.08] transition-all duration-300">
+                <Card className="h-full overflow-hidden border-white/10 bg-black/40 backdrop-blur-xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:shadow-gold-400/5">
+                  {/* Image Section */}
                   <div className="relative h-56 w-full overflow-hidden">
-                    <SafeImage
-                      src={img}
-                      alt={service.title}
-                      fill
-                      sizes="(max-width:768px) 100vw, 33vw"
-                      className="card-zoom object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <motion.div
+                      className="absolute inset-0"
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <SafeImage
+                        src={img}
+                        alt={service.title}
+                        fill
+                        sizes="(max-width:768px) 100vw, 33vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    </motion.div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     
-                    <div className="absolute left-4 top-4">
-                      <div className="rounded-full bg-white/95 px-3 py-1.5 backdrop-blur-sm border border-white/20 shadow-lg">
-                        <span className="text-[10px] font-medium uppercase tracking-wide text-foreground">
+                    {/* Category Badge */}
+                    <div className="absolute left-3 top-3">
+                      <div className="rounded-full bg-black/60 backdrop-blur-md px-2.5 py-1 border border-white/10">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-gold-400">
                           {categoryLabel(service.category)}
                         </span>
                       </div>
                     </div>
                     
-                    <div className="absolute right-4 top-4 flex gap-2">
+                    {/* Discount Badge */}
+                    {discount > 0 && (
+                      <div className="absolute left-3 bottom-3">
+                        <div className="rounded-full bg-gold-400/20 backdrop-blur-md px-2 py-0.5 border border-gold-400/30">
+                          <span className="text-[10px] font-bold text-gold-400">-{discount}%</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Action Buttons */}
+                    <div className="absolute right-3 top-3 flex gap-1.5">
                       <button
                         type="button"
                         onClick={() => toggleFavorite(service.id)}
-                        className="rounded-full bg-white/95 p-2.5 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white"
+                        className="rounded-full bg-black/60 backdrop-blur-md p-2 transition-all duration-200 hover:scale-110 hover:bg-gold-400/20"
                         aria-label={favorites.includes(service.id) ? "Remove favorite" : "Add favorite"}
                       >
                         <Heart
-                          className={`h-4 w-4 transition-colors duration-200 ${
-                            favorites.includes(service.id) ? "fill-red-500 text-red-500" : "text-muted/70"
+                          className={`h-3.5 w-3.5 transition-colors duration-200 ${
+                            favorites.includes(service.id) ? "fill-gold-400 text-gold-400" : "text-white/60"
                           }`}
                         />
                       </button>
                       <button
                         type="button"
-                        className="rounded-full bg-white/95 p-2.5 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white"
+                        className="rounded-full bg-black/60 backdrop-blur-md p-2 transition-all duration-200 hover:scale-110 hover:bg-gold-400/20"
                         aria-label="Share"
                       >
-                        <Share2 className="h-4 w-4 text-muted/70" />
+                        <Share2 className="h-3.5 w-3.5 text-white/60" />
                       </button>
                     </div>
                   </div>
                   
-                  <div className="p-6 space-y-4">
-                    <div className="flex items-start justify-between gap-4">
+                  {/* Content Section */}
+                  <div className="p-5 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
-                        <h3 className="font-display text-xl font-light tracking-tight text-foreground line-clamp-1">
+                        <h3 className="font-semibold text-lg tracking-tight text-white line-clamp-1">
                           {service.title}
                         </h3>
-                        <p className="mt-2 text-sm leading-relaxed text-muted/80 line-clamp-2">
+                        <p className="mt-1 text-sm leading-relaxed text-white line-clamp-2">
                           {service.description}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1.5 border border-amber-100">
-                        <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-                        <span className="text-sm font-semibold text-amber-700">4.8</span>
+                      <div className="flex items-center gap-1 rounded-full bg-gold-400/10 px-2 py-1 border border-gold-400/20 shrink-0">
+                        <Star className="h-3 w-3 fill-gold-400 text-gold-400" />
+                        <span className="text-xs font-semibold text-gold-400">4.8</span>
                       </div>
                     </div>
                     
                     {service.hours && (
-                      <div className="flex items-center gap-2 text-sm text-muted/70">
-                        <Clock className="h-4 w-4" />
+                      <div className="flex items-center gap-1.5 text-xs text-white/50">
+                        <Clock className="h-3 w-3" />
                         <span>{service.hours}</span>
                       </div>
                     )}
                     
-                    <div className="flex items-end justify-between pt-4 border-t border-border/10">
+                    <div className="flex items-end justify-between pt-3 border-t border-white/10">
                       <div className="flex-1">
-                        <div className="flex items-baseline gap-3">
+                        <div className="flex items-baseline gap-2">
                           {showStrike && (
-                            <span className="text-sm text-muted/60 line-through">
+                            <span className="text-xs text-white/40 line-through">
                               ${service.basePrice.toFixed(0)}
                             </span>
                           )}
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-[10px] font-medium uppercase tracking-wide text-muted/70">$</span>
-                            <span className="font-display text-3xl font-light text-foreground">
+                          <div className="flex items-baseline gap-0.5">
+                            <span className="text-xs font-medium text-white/50">$</span>
+                            <span className="text-2xl font-bold text-gold-400">
                               {service.publishedPrice.toFixed(0)}
                             </span>
                           </div>
                         </div>
-                        <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-accent">
-                          <Sparkles className="h-3 w-3" />
-                          AI optimized rate
-                        </p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Sparkles className="h-2.5 w-2.5 text-gold-400/70" />
+                          <p className="text-[10px] font-medium text-white/50">AI optimized rate</p>
+                        </div>
                       </div>
                       
                       <Button
@@ -356,9 +410,9 @@ export default function PricingPage() {
                           setSelectedService(buildModalService(service));
                           setIsModalOpen(true);
                         }}
-                        className="rounded-xl bg-gradient-to-r from-accent to-accent/90 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-accent/25 hover:from-accent/95 hover:shadow-accent/35 transition-all duration-200"
+                        className="rounded-full bg-gold-400/20 px-4 py-1.5 text-xs font-semibold text-gold-200 hover:bg-gold-400/40 hover:text-white hover:scale-105 hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] cursor-pointer border border-gold-400/30 transition-all duration-300"
                       >
-                        View Details
+                        Details
                       </Button>
                     </div>
                   </div>
@@ -366,6 +420,16 @@ export default function PricingPage() {
               </motion.div>
             );
           })}
+        </div>
+      </section>
+
+      {/* AI Optimization Note */}
+      <section className="border-t border-white/10 bg-black/40 py-8 mt-8">
+        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center gap-2 text-sm text-white/50">
+            <CheckCircle className="h-4 w-4 text-gold-400" />
+            <span>All prices are AI-optimized and updated in real-time based on demand</span>
+          </div>
         </div>
       </section>
 

@@ -216,15 +216,15 @@ export default function AdminPage() {
                                 >
                                   Check in
                                 </Button>
-                              ) : !b.checkedOutAt ? (
-                                <Button
-                                  variant="secondary"
-                                  className="!px-3 !py-1.5 !text-xs border-white/20 text-white hover:border-gold-400 hover:text-gold-400"
-                                  onClick={() => void checkOut(b.id)}
-                                >
-                                  Check out
-                                </Button>
-                              ) : null}
+                                ) : !b.checkedOutAt ? (
+                                  <Button
+                                    variant="outline"
+                                    className="!px-3 !py-1.5 !text-xs border-white/20 text-white hover:border-gold-400 hover:text-gold-400"
+                                    onClick={() => void checkOut(b.id)}
+                                  >
+                                    Check out
+                                  </Button>
+                                ) : null}
                             </div>
                           </Card>
                         </motion.li>
@@ -316,7 +316,7 @@ export default function AdminPage() {
                     <EmptyState title="No requests" />
                   </div>
                 ) : (
-                  <TableWrap>
+                  <TableWrap className="border-white/10 bg-black/40">
                     <table className="w-full min-w-[720px] text-left text-sm">
                       <thead className="sticky top-0 border-b border-white/10 bg-black/80 backdrop-blur-sm">
                         <tr>
@@ -399,7 +399,7 @@ function AdminRequestRow({
       <p className="mt-2 text-sm leading-relaxed text-white/80">{sr.message}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
-          variant="secondary"
+          variant="outline"
           className="!text-xs border-white/20 text-white hover:border-gold-400 hover:text-gold-400"
           onClick={() => onStatus("IN_PROGRESS")}
         >
