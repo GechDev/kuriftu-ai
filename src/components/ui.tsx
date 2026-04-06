@@ -99,7 +99,7 @@ export function Badge({
   className,
 }: {
   children: React.ReactNode;
-  variant?: "default" | "success" | "warning" | "muted" | "accent";
+  variant?: "default" | "success" | "warning" | "muted" | "accent" | "secondary";
   className?: string;
 }) {
   const styles = {
@@ -111,6 +111,8 @@ export function Badge({
       "bg-amber-50 text-amber-950 ring-1 ring-amber-200",
     muted: "bg-border/40 text-muted ring-1 ring-border/60",
     accent: "bg-accent-muted text-accent ring-1 ring-accent/25",
+    secondary:
+      "bg-white/10 text-white ring-1 ring-white/30",
   };
   return (
     <span
