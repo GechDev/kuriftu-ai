@@ -4,8 +4,9 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@demo.local";
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "admin123";
+  // HACKATHON ADMIN CREDENTIALS (for judges testing)
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "hackathon@kuriftu.local";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "hackathon123";
   const hash = await bcrypt.hash(adminPassword, 10);
 
   await prisma.user.upsert({
@@ -13,6 +14,11 @@ async function main() {
     create: { email: adminEmail, passwordHash: hash, isAdmin: true, role: "ADMIN" },
     update: { passwordHash: hash, isAdmin: true, role: "ADMIN" },
   });
+
+  // NOTE: This admin account is for HACKATHON JUDGES TESTING ONLY
+  // Email: hackathon@kuriftu.local | Password: hackathon123
+  // Provides full access to AI pricing controls and admin dashboard
+  // This account will be REMOVED after hackathon evaluation
 
   const managerEmail = process.env.SEED_MANAGER_EMAIL ?? "manager@demo.local";
   const managerPassword = process.env.SEED_MANAGER_PASSWORD ?? "manager123";

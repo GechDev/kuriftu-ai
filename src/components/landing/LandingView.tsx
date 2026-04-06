@@ -202,6 +202,41 @@ export function LandingView() {
 
         <FloatingParticles />
 
+        {/* HACKATHON JUDGE ACCESS - TOP RIGHT OF HERO */}
+        <div className="absolute top-40 right-48 z-50 max-w-sm">
+          <div className="rounded-2xl border border-gold-400/30 bg-black/60 backdrop-blur-xl p-4 shadow-2xl">
+            <h3 className="text-lg font-bold text-gold-400 mb-3">🏨 Hackathon Judge Access</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-white/80 text-sm">Email:</span>
+                <code className="bg-black/50 text-gold-400 px-3 py-1 rounded font-mono text-sm">admin@demo.local</code>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-white/80 text-sm">Password:</span>
+                <code className="bg-black/50 text-gold-400 px-3 py-1 rounded font-mono text-sm">admin123</code>
+              </div>
+            </div>
+            <p className="mt-4 text-xs text-white/60 italic">
+              ⚠️ This account provides full admin access to AI pricing controls and admin dashboard for evaluation purposes only.
+            </p>
+            <p className="text-xs text-white/60 italic">
+              🏨 Access to Control Center to see AI insights and predictions.
+            </p>
+            <p className="mt-3 text-xs text-white/60 italic">
+              👤 You can also register to experience as a normal user.
+            </p>
+            <p className="mt-3 text-xs text-white/60 italic">
+              🎯 Experience our AI-powered hospitality management system with real-time pricing optimization, service recommendations, and operational intelligence.
+            </p>
+            <p className="mt-2 text-xs text-white/60 italic">
+              🚀 Explore IntelliRate pricing engine, Service Optimizer recommendations, and automated guest communication features.
+            </p>
+            <p className="mt-3 text-xs text-white/60 italic">
+              😊 Enjoy exploring our AI-powered hospitality platform!
+            </p>
+          </div>
+        </div>
+
         <motion.div
           className="relative mx-auto flex h-full max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8"
           style={{ opacity: heroOpacity }}
@@ -622,13 +657,87 @@ export function LandingView() {
         </div>
       </section>
 
+      {/* Voice + Benefits Card */}
+      <section className="border-y border-white/10 bg-black/30 py-16 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              className="relative min-h-[15rem] overflow-hidden rounded-xl"
+            >
+              <CinematicImage src={resortImages.dining} alt="Dining" className="h-full w-full" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/15 to-transparent" />
+              <p className="absolute bottom-5 left-5 right-5 text-base font-medium text-white drop-shadow-md sm:text-lg">
+                Kuriftu guests expect quiet luxury. NEXORA keeps service invisible — and unforgettable.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="rounded-xl border border-white/15 bg-white/5 p-6 backdrop-blur-sm"
+            >
+              <Mic2 className="h-8 w-8 text-gold-400" />
+              <p className="mt-4 text-xl font-semibold text-white drop-shadow sm:text-2xl">
+                Voice and SMS that sound like your brand
+              </p>
+              <p className="mt-2 text-sm text-white/85">
+                Policies, inventory, and guest context stay synchronized — so AI Receptionist never overpromises.
+              </p>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                {[
+                  { label: "Routine call volume", value: "-38%" },
+                  { label: "RevPAR uplift", value: "+12%" },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-lg border border-white/10 bg-white/5 p-3 text-center">
+                    <p className="text-xl font-bold text-gold-400 sm:text-2xl">{stat.value}</p>
+                    <p className="mt-1 text-xs text-white/70">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works - Steps */}
+      <section className="py-16 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading
+            eyebrow="Flow"
+            title="How it works"
+            subtitle="From first contact to executive insight — one continuous loop."
+            className="text-white"
+          />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((s, idx) => (
+              <TiltCard key={s.n}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.08 }}
+                  className="relative rounded-xl border border-white/15 bg-white/5 p-5 backdrop-blur-sm"
+                >
+                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-gold-400/20 text-lg font-bold text-gold-400">
+                    0{s.n}
+                  </div>
+                  <h3 className="text-base font-semibold text-white drop-shadow-sm">{s.title}</h3>
+                  <p className="mt-1.5 text-sm text-white/80">{s.body}</p>
+                </motion.div>
+              </TiltCard>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section className="border-t border-white/10 bg-black/30 py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="Proof"
-            title="Trusted where hospitality runs 24/7"
-            subtitle="Real outcomes from properties using intelligent automation."
+            title="AI-Powered Luxury. Ethiopian Warmth."
+            subtitle="Kuriftu AI Nexus — where cutting-edge AI meets genuine Ethiopian hospitality. Three specialized agents orchestrate voice, concierge, and pricing operations."
             className="text-white"
           />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -648,7 +757,7 @@ export function LandingView() {
                       className="object-cover"
                     />
                   </div>
-                  <p className="text-sm text-white/85">“{t.quote}”</p>
+                  <p className="text-sm text-white/85">"{t.quote}"</p>
                   <div className="mt-4 border-t border-white/10 pt-3">
                     <p className="text-sm font-semibold text-white">{t.name}</p>
                     <p className="text-[10px] text-white/60">{t.role}</p>
@@ -677,6 +786,7 @@ export function LandingView() {
               <p className="mt-2 max-w-md text-xs text-white/85">
                 Walk through IntelliRate, Service Optimizer, and guest-facing AI in one tailored session.
               </p>
+              
               <Button href="mailto:hello@kuriftu.nexora" variant="light" className="mt-4 rounded-full px-5 py-1.5 text-xs">
                 Book a demo
               </Button>
