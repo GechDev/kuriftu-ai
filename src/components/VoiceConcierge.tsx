@@ -24,7 +24,7 @@ export function VoiceConcierge() {
   const [loading, setLoading] = useState(false);
 
   const connect = useCallback(async () => {
-    // Prevent multiple connections
+    // Prevent multiple connections and reconnection loops
     if (loading || token) {
       return;
     }
@@ -77,6 +77,7 @@ export function VoiceConcierge() {
     setServerUrl(undefined);
     setRoomName(undefined);
     setError(null);
+    setLoading(false);  // Also reset loading state
   }, []);
 
   return (

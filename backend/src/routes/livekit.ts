@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 const router = Router();
 
-// Generate LiveKit token for frontend
+// LiveKit token endpoint - deployed version
 router.post("/token", (req: Request, res: Response) => {
   try {
     const { roomName, participantName } = req.body;
@@ -49,6 +49,15 @@ router.post("/token", (req: Request, res: Response) => {
     console.error("LiveKit token generation error:", error);
     res.status(500).json({ error: "Failed to generate token" });
   }
+});
+
+// Add GET method for debugging
+router.get("/token", (req: Request, res: Response) => {
+  res.json({
+    message: "LiveKit token endpoint is working",
+    method: "GET - use POST for actual token",
+    timestamp: new Date().toISOString()
+  });
 });
 
 export default router;
