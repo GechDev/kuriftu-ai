@@ -11,6 +11,7 @@ const backendBase =
   "https://kuriftu-ai-s2fu.onrender.com"; // Production backend URL
 
 export async function POST(req: Request) {
+  const requestId = randomUUID();
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
   const livekitUrl =
@@ -56,14 +57,42 @@ export async function POST(req: Request) {
   }
 
   const httpUrl = livekitHttpUrl(livekitUrl);
+  const livekitHost = (() => {
+    try {
+      return new URL(livekitUrl).host;
+    } catch {
+      return livekitUrl;
+    }
+  })();
 
   try {
     const dispatchClient = new AgentDispatchClient(httpUrl, apiKey, apiSecret);
     await dispatchClient.createDispatch(roomName, AGENT_NAME);
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
+    const stack = e instanceof Error ? e.stack : undefined;
+    console.error("[livekit/token] dispatch failed", {
+      requestId,
+      roomName,
+      agentName: AGENT_NAME,
+      livekitUrl,
+      httpUrl,
+      detail: message,
+      stack,
+    });
     return NextResponse.json(
-      { error: "Failed to dispatch voice agent", detail: message },
+      {
+        error: "Failed to dispatch voice agent",
+        detail: message,
+        requestId,
+        debug: {
+          roomName,
+          agentName: AGENT_NAME,
+          livekitHost,
+          httpUrl,
+          hint: "Check that a running worker with this agentName is connected to this LiveKit project.",
+        },
+      },
       { status: 502 }
     );
   }
