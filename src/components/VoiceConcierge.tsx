@@ -22,10 +22,14 @@ export function VoiceConcierge() {
   const [linkedAccount, setLinkedAccount] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+
+  const tokenEndpoint =
+    process.env.NEXT_PUBLIC_VOICE_TOKEN_ENDPOINT?.trim() || "/api/livekit/token";
 
   const connect = useCallback(async () => {
     // Prevent multiple connections and reconnection loops
-    if (loading || token) {
+    if (loading || token || isConnected) {
       return;
     }
     
@@ -35,8 +39,9 @@ export function VoiceConcierge() {
     setServerUrl(undefined);
     setRoomName(undefined);
     setLinkedAccount(false);
+    setIsConnected(false); // Reset connection state
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/livekit/token`, {
+      const res = await fetch(tokenEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -65,19 +70,21 @@ export function VoiceConcierge() {
       setServerUrl(data.serverUrl);
       setRoomName(data.roomName);
       setLinkedAccount(Boolean(data.linkedAccount));
+      setIsConnected(true); // Set connection state to true
     } catch (e) {
       setError(e instanceof Error ? e.message : "Network error");
     } finally {
       setLoading(false);
     }
-  }, [bookingJwt]);
+  }, [bookingJwt, isConnected, loading, token, tokenEndpoint]);
 
   const disconnect = useCallback(() => {
     setToken(undefined);
     setServerUrl(undefined);
     setRoomName(undefined);
     setError(null);
-    setLoading(false);  // Also reset loading state
+    setLoading(false);
+    setIsConnected(false); // Reset connection state
   }, []);
 
   return (
