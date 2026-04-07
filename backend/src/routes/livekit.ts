@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { type Request, type Response } from "express";
+import jwt from "jsonwebtoken";
 
 const router = Router();
 
@@ -8,12 +9,24 @@ router.post("/token", (req: Request, res: Response) => {
   try {
     const { roomName, participantName } = req.body;
     
-    // For now, return a mock token - in production you'd generate real tokens
-    // This is a temporary fix to get voice working
+    // Generate a real JWT token for LiveKit
+    const token = jwt.sign(
+      {
+        identity: participantName || "guest",
+        name: participantName || "Guest User",
+        metadata: `room:${roomName || "default"}`,
+      },
+      process.env.LIVEKIT_API_SECRET || "fallback-secret",
+      {
+        expiresIn: "24h",
+        issuer: process.env.LIVEKIT_API_KEY || "API4ZSZ8bpjaMoB",
+        subject: participantName || "guest",
+      }
+    );
     
     res.json({
-      token: "mock-token-for-testing", // Replace with real token generation
-      url: "wss://kuriftu-ai-nwgrgp4i.livekit.cloud",
+      token: token,
+      serverUrl: process.env.LIVEKIT_URL || "wss://kuriftu-ai-nwgrgp4i.livekit.cloud",
       roomName: roomName || "default-room",
       participantName: participantName || "guest"
     });
