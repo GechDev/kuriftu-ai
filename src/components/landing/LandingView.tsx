@@ -209,11 +209,11 @@ export function LandingView() {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <span className="text-white/80 text-sm">Email:</span>
-                <code className="bg-black/50 text-gold-400 px-3 py-1 rounded font-mono text-sm">admin@demo.local</code>
+                <code className="bg-black/50 text-gold-400 px-3 py-1 rounded font-mono text-sm">hackathon@kuriftu.local</code>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-white/80 text-sm">Password:</span>
-                <code className="bg-black/50 text-gold-400 px-3 py-1 rounded font-mono text-sm">admin123</code>
+                <code className="bg-black/50 text-gold-400 px-3 py-1 rounded font-mono text-sm">hackathon123</code>
               </div>
             </div>
             <p className="mt-4 text-xs text-white/60 italic">

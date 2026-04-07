@@ -24,6 +24,11 @@ export function VoiceConcierge() {
   const [loading, setLoading] = useState(false);
 
   const connect = useCallback(async () => {
+    // Prevent multiple connections
+    if (loading || token) {
+      return;
+    }
+    
     setError(null);
     setLoading(true);
     setToken(undefined);
